@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TechServe CRM — Business Management System</title>
+<title>ViBreLia CRM — Business Management System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root {
   --bg: #0f1117;
@@ -236,6 +237,8 @@ textarea{resize:vertical;min-height:80px}
 /* Reminder tag */
 .reminder-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--purple-dim);color:var(--purple);border:1px solid rgba(155,127,232,.3)}
 
+.overdue-row td{color:var(--red)!important}
+
 /* Scrollbar */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -254,10 +257,45 @@ textarea{resize:vertical;min-height:80px}
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:40px 36px;width:100%;max-width:360px">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:300;letter-spacing:2px"><span style="color:#C9A84C">Vi</span>Bre<span style="color:#3d9e7a">Lia</span></div>
+      <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);margin-top:5px">Business Management System</div>
+    </div>
+    <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;margin-bottom:22px">
+      <button id="tab-pw-btn" onclick="switchLoginTab('password')" style="flex:1;padding:6px;border:none;border-radius:4px;background:var(--surface);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font)">Password</button>
+      <button id="tab-pin-btn" onclick="switchLoginTab('pin')" style="flex:1;padding:6px;border:none;border-radius:4px;background:none;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font)">PIN</button>
+    </div>
+
+    <!-- Password -->
+    <div id="login-pw-tab">
+      <div id="login-error" style="display:none;background:var(--red-dim);border:1px solid rgba(240,92,92,.3);color:var(--red);font-size:12px;padding:8px 11px;border-radius:var(--radius-sm);margin-bottom:12px">Incorrect password. Try again.</div>
+      <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px">Password</label><input type="password" id="login-pass" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 12px;font-size:14px;color:var(--text);font-family:var(--font);outline:none" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button onclick="doLogin()" style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font)">Sign in</button>
+    </div>
+
+    <!-- PIN -->
+    <div id="login-pin-tab" style="display:none">
+      <div id="pin-error" style="display:none;background:var(--red-dim);border:1px solid rgba(240,92,92,.3);color:var(--red);font-size:12px;padding:8px 11px;border-radius:var(--radius-sm);margin-bottom:12px">Incorrect PIN.</div>
+      <div style="display:flex;justify-content:center;gap:12px;margin:4px 0 16px">
+        <div class="pin-dot" id="pd0" style="width:13px;height:13px;border-radius:50%;border:2px solid var(--border2)"></div>
+        <div class="pin-dot" id="pd1" style="width:13px;height:13px;border-radius:50%;border:2px solid var(--border2)"></div>
+        <div class="pin-dot" id="pd2" style="width:13px;height:13px;border-radius:50%;border:2px solid var(--border2)"></div>
+        <div class="pin-dot" id="pd3" style="width:13px;height:13px;border-radius:50%;border:2px solid var(--border2)"></div>
+      </div>
+      <div id="pin-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"></div>
+    </div>
+
+    <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:20px">Default password: <strong style="color:var(--text2)">vibrelia2024</strong><br>Change in Settings after login</div>
+  </div>
+</div>
+
 <!-- SIDEBAR -->
 <aside id="sidebar">
   <div class="brand">
-    <div class="brand-name"><span class="brand-dot"></span>TechServe CRM</div>
+    <div class="brand-name"><span class="brand-dot"></span><span style="color:#C9A84C">Vi</span>Bre<span style="color:#3d9e7a">Lia</span></div>
     <div class="brand-tag">Business Management System</div>
   </div>
   <nav>
@@ -289,6 +327,10 @@ textarea{resize:vertical;min-height:80px}
       Invoices
       <span class="nav-badge" id="badge-invoices">0</span>
     </div>
+    <div class="nav-item" onclick="showPage('receipts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 5l-1.5 1.5L18 5l-1.5 1.5L15 5l-1.5 1.5L12 5l-1.5 1.5L9 5 7.5 6.5 6 5v14l1.5-1.5L9 19l1.5-1.5L12 19l1.5-1.5L15 19l1.5-1.5L18 19l1.5-1.5L21 19z"/></svg>
+      Receipts
+    </div>
     <div class="nav-item" onclick="showPage('payments')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       Payments
@@ -309,14 +351,19 @@ textarea{resize:vertical;min-height:80px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
       WhatsApp Sender
     </div>
+    <div class="nav-item" onclick="showPage('catalogue')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Services
+    </div>
     <div class="nav-item" onclick="showPage('settings')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
     </div>
   </nav>
   <div class="sidebar-footer">
-    <strong id="biz-name-display">Your Tech Business</strong>
-    <span id="biz-location-display">Eldoret, Kenya</span>
+    <strong id="biz-name-display">ViBreLia Technology</strong>
+    <span id="biz-location-display">Kisumu, Kenya</span>
+    <div onclick="doLogout()" style="display:flex;align-items:center;gap:6px;margin-top:8px;color:var(--red);font-size:11px;cursor:pointer;opacity:.7">⎋ Sign out</div>
   </div>
 </aside>
 
@@ -338,6 +385,10 @@ textarea{resize:vertical;min-height:80px}
     <!-- ===== DASHBOARD ===== -->
     <div class="page active" id="page-dashboard">
       <div class="stats-row" id="dashboard-stats"></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:22px">
+        <div class="section-title" style="margin-bottom:14px">Revenue — last 6 months</div>
+        <canvas id="revenue-chart" style="max-height:200px"></canvas>
+      </div>
       <div class="two-col">
         <div>
           <div class="section-title">Quick actions</div>
@@ -564,6 +615,36 @@ textarea{resize:vertical;min-height:80px}
       </div>
     </div>
 
+
+    <!-- RECEIPTS -->
+    <div class="page" id="page-receipts">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left"><input class="search-input" placeholder="Search receipts..." oninput="filterTable('receipts-table',this.value)"></div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('receipt')">+ New receipt</button>
+        </div>
+        <table id="receipts-table">
+          <thead><tr><th>Receipt #</th><th>Client</th><th>Invoice ref</th><th>Amount paid</th><th>Date paid</th><th>Method</th><th>Actions</th></tr></thead>
+          <tbody id="receipts-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SERVICES CATALOGUE -->
+    <div class="page" id="page-catalogue">
+      <div class="table-wrap" style="padding:20px;margin-bottom:16px">
+        <div class="section-title" style="margin-bottom:12px">Add service</div>
+        <div class="form-grid" style="margin-bottom:10px">
+          <div class="form-group"><label>Service name</label><input id="cat-name" placeholder="e.g. CCTV Installation"></div>
+          <div class="form-group"><label>Default price (KES)</label><input id="cat-price" type="number" placeholder="3000"></div>
+          <div class="form-group full"><label>Description</label><input id="cat-desc" placeholder="Brief description"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addService()">Add service</button>
+      </div>
+      <div class="section-title">Your services</div>
+      <div id="service-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px"></div>
+    </div>
+
     <!-- ===== SETTINGS ===== -->
     <div class="page" id="page-settings">
       <div style="max-width:560px">
@@ -666,6 +747,71 @@ const fmt=(d)=>d?new Date(d).toLocaleDateString('en-KE',{day:'2-digit',month:'sh
 const fmtCur=(n)=>{const s=settings();return(s.currency||'KES')+' '+Number(n||0).toLocaleString()};
 
 // ============================================================
+// AUTH
+// ============================================================
+let pinBuffer='';
+function getCredentials(){const c=DB.getObj('credentials');return Object.keys(c).length?c:{password:'vibrelia2024',pin:'1234'};}
+function switchLoginTab(tab){
+  const isPw=tab==='password';
+  document.getElementById('login-pw-tab').style.display=isPw?'block':'none';
+  document.getElementById('login-pin-tab').style.display=isPw?'none':'block';
+  document.getElementById('tab-pw-btn').style.background=isPw?'var(--surface)':'none';
+  document.getElementById('tab-pw-btn').style.color=isPw?'var(--text)':'var(--text2)';
+  document.getElementById('tab-pin-btn').style.background=isPw?'none':'var(--surface)';
+  document.getElementById('tab-pin-btn').style.color=isPw?'var(--text2)':'var(--text)';
+  pinBuffer='';updatePinDots();
+}
+function doLogin(){
+  const entered=v('login-pass');const creds=getCredentials();
+  if(entered===creds.password){enterApp();}
+  else{document.getElementById('login-error').style.display='block';}
+}
+function doPinKey(k){
+  if(k==='del'){pinBuffer=pinBuffer.slice(0,-1);}
+  else if(pinBuffer.length<4){pinBuffer+=k;}
+  updatePinDots();
+  if(pinBuffer.length===4){
+    const creds=getCredentials();
+    if(pinBuffer===creds.pin){enterApp();}
+    else{document.getElementById('pin-error').style.display='block';setTimeout(()=>{pinBuffer='';updatePinDots();document.getElementById('pin-error').style.display='none';},900);}
+  }
+}
+function updatePinDots(){
+  for(let i=0;i<4;i++){const d=document.getElementById('pd'+i);if(d){d.style.background=i<pinBuffer.length?'var(--accent)':'';d.style.borderColor=i<pinBuffer.length?'var(--accent)':'var(--border2)';}}
+}
+function buildPinGrid(){
+  const g=document.getElementById('pin-grid');if(!g)return;
+  const keys=[['1','2','3'],['4','5','6'],['7','8','9'],['del','0','']];
+  g.innerHTML='';
+  keys.forEach(row=>{
+    row.forEach(k=>{
+      if(k===''){const s=document.createElement('div');g.appendChild(s);return;}
+      const b=document.createElement('div');
+      b.textContent=k==='del'?'⌫':k;
+      b.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;font-size:18px;font-weight:500;cursor:pointer;color:var(--text);transition:all .15s;user-select:none';
+      b.onmouseenter=()=>b.style.background='var(--surface)';
+      b.onmouseleave=()=>b.style.background='var(--surface2)';
+      b.onclick=()=>doPinKey(k);
+      g.appendChild(b);
+    });
+  });
+}
+function enterApp(){
+  const ls=document.getElementById('login-screen');if(ls)ls.style.display='none';
+  DB.setObj('session',{loggedIn:true,time:Date.now()});
+}
+function doLogout(){DB.setObj('session',{loggedIn:false});location.reload();}
+function checkSession(){const s=DB.getObj('session');if(s&&s.loggedIn&&(Date.now()-s.time)<28800000)enterApp();}
+function updateCredentials(){
+  const np=v('new-pass'),npin=v('new-pin');
+  if(!np&&!npin)return toast('Enter a new password or PIN');
+  const creds=getCredentials();
+  if(np)creds.password=np;
+  if(npin&&npin.length===4)creds.pin=npin;
+  DB.setObj('credentials',creds);toast('Credentials updated','success');
+}
+
+// ============================================================
 // SETTINGS
 // ============================================================
 function settings(){return DB.getObj('settings')}
@@ -716,19 +862,22 @@ function showPage(name){
   renderPage(name);
 }
 function renderPage(n){
-  if(n==='dashboard')renderDashboard();
+  if(n==='dashboard'){renderDashboard();setTimeout(renderRevenueChart,100);}
   else if(n==='clients')renderClients();
   else if(n==='engagements')renderEngagements();
   else if(n==='quotes')renderQuotes();
   else if(n==='invoices')renderInvoices();
+  else if(n==='receipts')renderReceipts();
   else if(n==='payments')renderPayments();
   else if(n==='schedule')renderSchedule();
   else if(n==='tasks')renderTasks();
+  else if(n==='catalogue')renderCatalogue();
 }
 function openModal(type){
   document.getElementById('main-modal').style.display='flex';
   const forms={
     client:clientForm,quote:quoteForm,invoice:invoiceForm,
+    receipt:openReceiptModal,
     payment:paymentForm,meeting:meetingForm,task:taskForm,engagement:engagementForm
   };
   if(forms[type])forms[type]();
@@ -948,7 +1097,8 @@ function renderQuotes(){
       <td class="td-secondary">${fmt(q.date)}</td>
       <td>
         <button class="btn btn-sm" onclick="previewQuote('${q.id}')">View</button>
-        ${q.status!=='approved'?`<button class="btn btn-green btn-sm" onclick="approveQuote('${q.id}')">Approve</button>`:''}
+        ${q.status==='sent'?`<button class="btn btn-green btn-sm" onclick="approveQuote('${q.id}')">Approve</button>`:''}
+        ${q.status==='approved'?`<button class="btn btn-amber btn-sm" onclick="quoteToInvoice('${q.id}')">→ Invoice</button>`:''}
         <button class="btn btn-sm" onclick="sendQuoteWA('${q.id}')">📱</button>
       </td>
     </tr>`}).join('');
@@ -999,6 +1149,36 @@ function calcQTotal(){
   document.getElementById('q-subtotal').textContent=cur+' '+sub.toLocaleString();
   document.getElementById('q-vat-amt').textContent=cur+' '+vat.toLocaleString();
   document.getElementById('q-total').textContent=cur+' '+(sub+vat).toLocaleString();
+}
+function quoteToInvoice(qid){
+  const q=DB.get('quotes').find(x=>x.id===qid);if(!q)return;
+  invLineItems=[...q.lineItems];
+  const invs=DB.get('invoices');
+  const nextNum='INV-'+(invs.length+1).toString().padStart(3,'0');
+  const due=new Date(Date.now()+14*864e5).toISOString().split('T')[0];
+  document.getElementById('modal-title').textContent='Invoice from '+q.quoteNum;
+  const clientName=DB.get('clients').find(x=>x.id===q.clientId)?.name||'';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="alert alert-info">Pre-filled from quote ${q.quoteNum} — review and save.</div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="form-group"><label>Invoice #</label><input id="inv-num" value="${nextNum}" readonly style="opacity:.5"></div>
+      <div class="form-group"><label>Date</label><input id="inv-date" type="date" value="${today()}"></div>
+      <div class="form-group full"><label>Client</label><input value="${clientName}" readonly style="opacity:.6"><input type="hidden" id="inv-client" value="${q.clientId}"></div>
+      <div class="form-group full"><label>Description</label><input id="inv-desc" value="${q.service||''}"></div>
+      <div class="form-group"><label>Due date</label><input id="inv-due" type="date" value="${due}"></div>
+      <div class="form-group"><label>Status</label><select id="inv-status"><option value="pending" selected>Pending</option><option value="paid">Paid</option></select></div>
+    </div>
+    <div class="section-title">Line items</div>
+    <div id="inv-lines" style="margin:8px 0"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px"><div style="min-width:190px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:4px 0"><span>Subtotal</span><span id="i-sub">${(settings().currency||'KES')+' '+q.subtotal.toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);padding:4px 0"><span>VAT 16% <input type="checkbox" id="i-vat" ${q.vat>0?'checked':''} onchange="calcInv()"></span><span id="i-vat-amt">${(settings().currency||'KES')+' '+(q.vat||0).toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:var(--text);padding:6px 0;border-top:1px solid var(--border)"><span>Total</span><span id="i-total">${fmtCur(q.total)}</span></div>
+    </div></div>
+    <div class="form-group" style="margin-top:8px"><label>Payment instructions</label><textarea id="inv-payment" rows="2">${settings().paymentInfo||''}</textarea></div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="saveInvoice()">Save invoice</button>`;
+  document.getElementById('main-modal').style.display='flex';
+  renderInvLines();
 }
 function saveQuote(){
   const cid=v('quote-client');if(!cid)return toast('Select a client');
@@ -1076,7 +1256,7 @@ function renderInvoices(filter){
       <td>${statusBadge(inv.status)}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-sm" onclick="previewInvoice('${inv.id}')">View</button>
-        ${inv.status!=='paid'?`<button class="btn btn-green btn-sm" onclick="markPaid('${inv.id}')">Mark paid</button>`:''}
+        ${inv.status!=='paid'?`<button class="btn btn-green btn-sm" onclick="markPaid('${inv.id}')">Mark paid</button>`:`<button class="btn btn-sm" onclick="generateReceipt('${inv.id}')">Receipt</button>`}
         <button class="btn btn-sm" onclick="sendInvoiceViaWAById('${inv.id}')">📱</button>
       </td>
     </tr>`}).join('');
@@ -1485,13 +1665,172 @@ function filterTable(tableId,query){
 }
 
 // ============================================================
+// AUTO FLAG OVERDUE
+// ============================================================
+function autoFlagOverdue(){
+  const invs=DB.get('invoices');let changed=false;
+  invs.forEach(inv=>{if(inv.status==='pending'&&inv.dueDate&&inv.dueDate<today()){inv.status='overdue';changed=true;}});
+  if(changed)DB.set('invoices',invs);
+}
+
+// ============================================================
+// REVENUE CHART
+// ============================================================
+let revenueChart=null;
+function renderRevenueChart(){
+  const pays=DB.get('payments');const invs=DB.get('invoices');
+  const months=[],billed=[],collected=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date();d.setMonth(d.getMonth()-i);
+    const ym=d.toISOString().slice(0,7);
+    months.push(d.toLocaleDateString('en-KE',{month:'short'}));
+    billed.push(invs.filter(x=>x.date&&x.date.startsWith(ym)).reduce((a,x)=>a+Number(x.amount||0),0));
+    collected.push(pays.filter(x=>x.date&&x.date.startsWith(ym)).reduce((a,x)=>a+Number(x.amount||0),0));
+  }
+  const ctx=document.getElementById('revenue-chart');if(!ctx)return;
+  if(revenueChart)revenueChart.destroy();
+  revenueChart=new Chart(ctx,{type:'bar',data:{labels:months,datasets:[
+    {label:'Billed',data:billed,backgroundColor:'rgba(79,142,247,0.25)',borderColor:'#4f8ef7',borderWidth:1.5,borderRadius:4},
+    {label:'Collected',data:collected,backgroundColor:'rgba(52,196,124,0.25)',borderColor:'#34c47c',borderWidth:1.5,borderRadius:4}
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#8b90a0',font:{size:11}}}},scales:{x:{ticks:{color:'#555c70',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#555c70',font:{size:11},callback:v=>'K'+(v/1000).toFixed(0)},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+
+// ============================================================
+// RECEIPTS
+// ============================================================
+function renderReceipts(){
+  const receipts=DB.get('receipts'),clients=DB.get('clients');
+  const tb=document.getElementById('receipts-tbody');
+  if(!receipts){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No receipts yet.</td></tr>';return;}
+  if(!receipts.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No receipts yet. Mark an invoice paid then click Receipt.</td></tr>';return;}
+  tb.innerHTML=receipts.slice().reverse().map(r=>{
+    const c=clients.find(x=>x.id===r.clientId);
+    return`<tr><td class="td-mono">${r.receiptNum}</td><td><strong>${c?c.name:'?'}</strong></td><td class="td-mono td-secondary">${r.invoiceRef||'—'}</td><td class="td-mono" style="color:var(--green)">${fmtCur(r.amount)}</td><td class="td-secondary">${fmt(r.datePaid)}</td><td class="td-secondary">${r.method||'—'}</td>
+    <td style="white-space:nowrap"><button class="btn btn-sm" onclick="previewReceipt('${r.id}')">View</button><button class="btn btn-sm" onclick="sendReceiptWA('${r.id}')">📱</button></td></tr>`;}).join('');
+}
+function generateReceipt(invoiceId){
+  const inv=DB.get('invoices').find(x=>x.id===invoiceId);if(!inv)return;
+  const receipts=DB.get('receipts');
+  const exists=receipts.find(r=>r.invoiceId===invoiceId);
+  if(exists){toast('Receipt already exists');previewReceipt(exists.id);return;}
+  const c=DB.get('clients').find(x=>x.id===inv.clientId);
+  const r={id:genId(),receiptNum:'RCP-'+(receipts.length+1).toString().padStart(3,'0'),clientId:inv.clientId,invoiceId,invoiceRef:inv.invoiceNum,amount:inv.amount,datePaid:inv.paidDate||today(),method:'M-Pesa',lineItems:inv.lineItems,description:inv.description,created:today()};
+  receipts.push(r);DB.set('receipts',receipts);
+  toast('Receipt generated','success');
+  addActivity(`Receipt <strong>${r.receiptNum}</strong> for <strong>${c?c.name:''}</strong>`);
+  previewReceipt(r.id);
+}
+function openReceiptModal(){
+  document.getElementById('modal-title').textContent='New receipt';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid">
+      <div class="form-group full"><label>Client *</label><select id="rcpt-client"><option value="">—</option>${DB.get('clients').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div class="form-group full"><label>Invoice ref</label><input id="rcpt-inv-ref" placeholder="e.g. INV-003"></div>
+      <div class="form-group"><label>Amount paid *</label><input id="rcpt-amount" type="number"></div>
+      <div class="form-group"><label>Date paid</label><input id="rcpt-date" type="date" value="${today()}"></div>
+      <div class="form-group"><label>Method</label><select id="rcpt-method"><option>M-Pesa</option><option>Bank transfer</option><option>Cash</option><option>Airtel Money</option></select></div>
+      <div class="form-group"><label>Ref code</label><input id="rcpt-ref"></div>
+      <div class="form-group full"><label>Description</label><input id="rcpt-desc"></div>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="saveManualReceipt()">Save receipt</button>`;
+  document.getElementById('main-modal').style.display='flex';
+}
+function saveManualReceipt(){
+  const cid=v('rcpt-client'),amt=v('rcpt-amount');
+  if(!cid||!amt)return toast('Client and amount required');
+  const receipts=DB.get('receipts');
+  const r={id:genId(),receiptNum:'RCP-'+(receipts.length+1).toString().padStart(3,'0'),clientId:cid,invoiceRef:v('rcpt-inv-ref'),amount:+amt,datePaid:v('rcpt-date'),method:v('rcpt-method'),reference:v('rcpt-ref'),description:v('rcpt-desc'),created:today()};
+  receipts.push(r);DB.set('receipts',receipts);
+  const c=DB.get('clients').find(x=>x.id===cid);
+  closeModal('main-modal');renderReceipts();toast('Receipt saved','success');
+  addActivity(`Receipt <strong>${r.receiptNum}</strong> for <strong>${c?c.name:''}</strong>`);
+}
+function previewReceipt(id){
+  const r=DB.get('receipts').find(x=>x.id===id);if(!r)return;
+  const c=DB.get('clients').find(x=>x.id===r.clientId);const s=settings();
+  if(!document.getElementById('invoice-print-modal'))return;
+  document.getElementById('invoice-print-content').innerHTML=buildReceiptHTML(r,c,s);
+  document.getElementById('invoice-print-modal').style.display='flex';
+  document.getElementById('invoice-print-modal').dataset.rcptId=id;
+}
+function buildReceiptHTML(r,c,s){
+  return`<div style="background:#fff;color:#1a1a2e;border-radius:10px;padding:28px;font-size:13px;line-height:1.6">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;border-bottom:3px solid #0d1b3e;padding-bottom:16px">
+      <div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:300;letter-spacing:1px"><span style="color:#C9A84C">Vi</span>Bre<span style="color:#3d9e7a">Lia</span></div>
+        <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#C9A84C;margin-top:2px">Technology</div>
+        <div style="font-size:11px;color:#888;margin-top:6px;line-height:1.7">${s.location||'Kisumu, Kenya'}<br>${s.email||''} · ${s.phone||''}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:28px;font-weight:700;color:#22c55e;letter-spacing:-1px">RECEIPT</div>
+        <div style="font-size:12px;color:#888;margin-top:3px">${r.receiptNum}</div>
+        <div style="font-size:12px;color:#888">Date: ${fmt(r.datePaid)}</div>
+        ${r.invoiceRef?`<div style="font-size:12px;color:#888">Invoice: ${r.invoiceRef}</div>`:''}
+        <div style="display:inline-block;border:3px solid #22c55e;color:#22c55e;font-size:11px;font-weight:700;letter-spacing:.1em;padding:3px 10px;border-radius:4px;transform:rotate(-8deg);margin-top:6px">PAID</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px">
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:5px">From</div><div style="font-size:14px;font-weight:600;color:#0d1b3e">${s.bizName||'ViBreLia Technology'}</div><div style="font-size:12px;color:#555;margin-top:2px">${s.email||''}<br>${s.phone||''}</div></div>
+      <div><div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:5px">Receipt to</div><div style="font-size:14px;font-weight:600;color:#0d1b3e">${c?c.name:'Client'}</div><div style="font-size:12px;color:#555;margin-top:2px">${c?c.email||'':''}<br>${c?c.phone||'':''}</div></div>
+    </div>
+    ${r.description?`<div style="background:#f9fafb;border-radius:5px;padding:9px 12px;margin-bottom:14px;font-size:12px;color:#555"><strong>For:</strong> ${r.description}</div>`:''}
+    ${r.lineItems&&r.lineItems.length?`<table style="width:100%;border-collapse:collapse;margin-bottom:16px"><thead><tr><th style="font-size:10px;font-weight:700;text-transform:uppercase;color:#888;padding:7px 8px;border-bottom:1px solid #e5e7eb;text-align:left">Description</th><th style="font-size:10px;font-weight:700;text-transform:uppercase;color:#888;padding:7px 8px;border-bottom:1px solid #e5e7eb;text-align:right">Amount</th></tr></thead><tbody>${r.lineItems.map(l=>`<tr><td style="padding:9px 8px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#333">${l.desc}</td><td style="padding:9px 8px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#333;text-align:right">${(s.currency||'KES')} ${(l.qty*l.rate).toLocaleString()}</td></tr>`).join('')}</tbody></table>`:''}
+    <div style="margin-left:auto;width:200px;border-top:2px solid #22c55e;padding-top:10px">
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#0d1b3e"><span>Amount Received</span><span style="color:#22c55e">${(s.currency||'KES')} ${Number(r.amount).toLocaleString()}</span></div>
+    </div>
+    <div style="margin-top:18px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:13px 15px;font-size:12px;color:#166534">
+      <strong style="display:block;font-size:13px;margin-bottom:3px">Payment confirmed</strong>
+      Method: ${r.method||'—'}${r.reference?' · Ref: '+r.reference:''}<br>Date: ${fmt(r.datePaid)}<br>This receipt confirms full payment has been received.
+    </div>
+    <div style="margin-top:18px;text-align:center;font-size:11px;color:#aaa">${s.invoiceNote||'Thank you for your business!'}</div>
+  </div>`;
+}
+function sendReceiptWA(id){
+  const r=DB.get('receipts').find(x=>x.id===id);if(!r)return;
+  const c=DB.get('clients').find(x=>x.id===r.clientId);if(!c||!c.phone)return toast('No phone number');
+  const s=settings();
+  const msg=encodeURIComponent(`Hello ${c.name},\n\n✅ *Payment Receipt — ${r.receiptNum}*\n\n💰 Amount: *${fmtCur(r.amount)}*\n📅 Date: ${fmt(r.datePaid)}\n💳 ${r.method||''}${r.reference?' · Ref: '+r.reference:''}\n${r.invoiceRef?'🧾 Invoice: '+r.invoiceRef:''}\n\nThank you for your payment!\n\n— ${s.bizName||'ViBreLia Technology'}`);
+  window.open(`https://wa.me/${c.phone.replace(/[^0-9]/g,'')}?text=${msg}`,'_blank');
+}
+
+// ============================================================
+// SERVICES CATALOGUE
+// ============================================================
+function renderCatalogue(){
+  const services=DB.get('services')||[];
+  const g=document.getElementById('service-grid');if(!g)return;
+  if(!services.length){g.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No services yet.</div>';return;}
+  g.innerHTML=services.map((s,i)=>`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-size:12px;font-weight:500;color:var(--text)">${s.name}</div><div style="font-size:11px;color:var(--text3)">${s.desc||''}</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div style="font-size:12px;color:var(--green);font-family:var(--mono)">${fmtCur(s.price)}</div>
+        <button class="btn btn-sm" style="padding:2px 7px;font-size:10px;color:var(--red)" onclick="deleteService(${i})">×</button>
+      </div>
+    </div>`).join('');
+}
+function addService(){
+  const name=v('cat-name'),price=v('cat-price');
+  if(!name)return toast('Service name required');
+  const services=DB.get('services')||[];
+  services.push({id:genId(),name,price:+price||0,desc:v('cat-desc')});
+  DB.set('services',services);
+  ['cat-name','cat-price','cat-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderCatalogue();toast('Service added','success');
+}
+function deleteService(idx){const s=DB.get('services')||[];s.splice(idx,1);DB.set('services',s);renderCatalogue();}
+
+// ============================================================
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
+  checkSession();
+  buildPinGrid();
   document.getElementById('current-date').textContent=new Date().toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   loadSettings();
+  autoFlagOverdue();
   renderDashboard();
-  renderWaLog();
+  setTimeout(renderRevenueChart,200);
   refreshClientDropdowns();
   // Load activity into feed
   const acts=DB.get('activity');
