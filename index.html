@@ -958,9 +958,10 @@ async function initFirebase(){
   const cfg=DB.getObj('fb-config');
   if(!cfg||!cfg.apiKey||!cfg.projectId)return;
   try{
-    if(!firebase.apps.length){
-      fbApp=firebase.initializeApp({apiKey:cfg.apiKey,authDomain:cfg.projectId+'.firebaseapp.com',projectId:cfg.projectId,storageBucket:cfg.projectId+'.appspot.com',appId:cfg.appId||''});
-    } else { fbApp=firebase.apps[0]; }
+    try{
+      if(firebase.apps.length){fbApp=firebase.apps[0];}
+      else{fbApp=firebase.initializeApp({apiKey:cfg.apiKey,authDomain:cfg.projectId+'.firebaseapp.com',projectId:cfg.projectId,storageBucket:cfg.projectId+'.appspot.com',appId:cfg.appId||''});}
+    }catch(initErr){fbApp=firebase.apps[0];}
     fbAuth=firebase.auth();
     fbDb=firebase.firestore();
     // Try to sign in
@@ -989,9 +990,13 @@ async function pullSilent(){
 async function connectFirebase(){
   const apiKey=v('fb-apikey'),projectId=v('fb-projectid'),appId=v('fb-appid'),email=v('fb-email'),password=v('fb-password');
   if(!apiKey||!projectId||!email||!password){toast('Fill in all Firebase fields');return;}
-  document.getElementById('fb-config-status').textContent='Connecting...';
+  const statusEl=document.getElementById('fb-config-status');
+  statusEl.textContent='Connecting...';
   try{
-    if(firebase.apps.length)firebase.apps[0].delete();
+    // Delete any existing Firebase app first (await it properly)
+    if(firebase.apps.length){
+      await Promise.all(firebase.apps.map(app=>app.delete()));
+    }
     fbApp=firebase.initializeApp({apiKey,authDomain:projectId+'.firebaseapp.com',projectId,storageBucket:projectId+'.appspot.com',appId});
     fbAuth=firebase.auth();
     fbDb=firebase.firestore();
@@ -999,12 +1004,12 @@ async function connectFirebase(){
     fbUser=cred.user;
     DB.setObj('fb-config',{apiKey,projectId,appId,email,password});
     setFbStatus('online');
-    document.getElementById('fb-config-status').textContent='✅ Connected as '+email;
+    statusEl.textContent='✅ Connected as '+email;
     toast('Firebase connected!','success');
     await pushAllToFirebase();
   }catch(e){
-    document.getElementById('fb-config-status').textContent='❌ Error: '+e.message;
-    toast('Connection failed: '+e.message);
+    statusEl.textContent='❌ '+e.message;
+    toast('Failed: '+e.message);
   }
 }
 
