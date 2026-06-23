@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <style>
 :root {
   --bg: #0f1117;
@@ -240,6 +243,14 @@ textarea{resize:vertical;min-height:80px}
 .overdue-row td{color:var(--red)!important}
 
 
+
+/* ── FIREBASE STATUS ── */
+.fb-status{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;margin-top:6px}
+.fb-online{background:rgba(52,196,124,.15);color:#34c47c}
+.fb-offline{background:rgba(245,166,35,.15);color:#f5a623}
+.fb-setup{background:rgba(79,142,247,.15);color:#4f8ef7;cursor:pointer}
+.fb-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+
 /* ── LIGHT MODE ── */
 body.light-mode{--bg:#f0f2f7;--surface:#ffffff;--surface2:#f5f7fb;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);--text:#1a1d2e;--text2:#555c70;--text3:#9ba3b8}
 body.light-mode .brand-dot{animation:pulse 2s infinite}
@@ -431,7 +442,10 @@ body.light-mode .login-card,body.light-mode #login-screen{background:#f0f2f7}
   <div class="sidebar-footer">
     <strong id="biz-name-display">ViBreLia Technology</strong>
     <span id="biz-location-display">Kisumu, Kenya</span>
-    <div onclick="doLogout()" style="display:flex;align-items:center;gap:6px;margin-top:8px;color:var(--red);font-size:11px;cursor:pointer;opacity:.7">⎋ Sign out</div>
+    <div id="fb-status-pill" class="fb-status fb-offline" onclick="if(this.classList.contains('fb-setup'))showPage('settings')">
+      <span class="fb-dot"></span><span id="fb-status-text">Local only</span>
+    </div>
+    <div onclick="doLogout()" style="display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--red);font-size:11px;cursor:pointer;opacity:.7">⎋ Sign out</div>
   </div>
 </aside>
 
@@ -798,6 +812,25 @@ body.light-mode .login-card,body.light-mode #login-screen{background:#f0f2f7}
           <button class="btn btn-sm" style="margin-top:12px" onclick="updateCredentials()">Update credentials</button>
         </div>
 
+        <div class="table-wrap" style="padding:20px;margin-bottom:16px" id="firebase-settings-card">
+          <div class="section-title" style="margin-bottom:4px">☁️ Firebase cloud sync</div>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Connect Firebase so your data syncs across all devices automatically. <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">Create free project →</a></p>
+          <div class="form-grid">
+            <div class="form-group"><label>Firebase Email</label><input id="fb-email" type="email" placeholder="your@gmail.com"></div>
+            <div class="form-group"><label>Firebase Password</label><input id="fb-password" type="password" placeholder="Firebase password"></div>
+            <div class="form-group"><label>API Key</label><input id="fb-apikey" placeholder="AIzaSy..."></div>
+            <div class="form-group"><label>Project ID</label><input id="fb-projectid" placeholder="vibrelia-crm"></div>
+            <div class="form-group full"><label>App ID</label><input id="fb-appid" placeholder="1:123456789:web:abcdef123456"></div>
+          </div>
+          <div id="fb-config-status" style="font-size:12px;margin:10px 0;min-height:18px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="connectFirebase()">Connect Firebase</button>
+            <button class="btn btn-sm" onclick="pushAllToFirebase()">⬆ Push local → cloud</button>
+            <button class="btn btn-sm" onclick="pullAllFromFirebase()">⬇ Pull cloud → device</button>
+            <button class="btn btn-danger btn-sm" onclick="disconnectFirebase()">Disconnect</button>
+          </div>
+        </div>
+
         <div class="table-wrap" style="padding:20px">
           <div class="section-title">Data management</div>
           <p style="font-size:13px;color:var(--text2);margin-bottom:14px">All data is stored in your browser's local storage. Export to JSON to back up your data.</p>
@@ -862,12 +895,153 @@ body.light-mode .login-card,body.light-mode #login-screen{background:#f0f2f7}
 // ============================================================
 // DATA LAYER
 // ============================================================
+// ─── FIREBASE STATE ───
+let fbApp=null, fbAuth=null, fbDb=null, fbUser=null;
+const FB_KEYS=['clients','quotes','invoices','receipts','payments','meetings','tasks','engagements','wa-logs','services','activity','expenses','projects','recurring','credentials','settings','confirm-links'];
+
+// ─── DB LAYER (localStorage + Firebase sync) ───
 const DB = {
-  get(key){try{return JSON.parse(localStorage.getItem('tsc_'+key))||[]}catch{return[]}},
-  set(key,val){localStorage.setItem('tsc_'+key,JSON.stringify(val))},
-  getObj(key){try{return JSON.parse(localStorage.getItem('tsc_'+key))||{}}catch{return{}}},
-  setObj(key,val){localStorage.setItem('tsc_'+key,JSON.stringify(val))}
+  get(key){try{return JSON.parse(localStorage.getItem('vbl_'+key))||[]}catch{return[]}},
+  set(key,val){
+    localStorage.setItem('vbl_'+key,JSON.stringify(val));
+    fbPush(key,val);
+  },
+  getObj(key){try{return JSON.parse(localStorage.getItem('vbl_'+key))||{}}catch{return{}}},
+  setObj(key,val){
+    localStorage.setItem('vbl_'+key,JSON.stringify(val));
+    fbPush(key,val);
+  }
 };
+
+// ─── FIREBASE PUSH (single key) ───
+async function fbPush(key,val){
+  if(!fbDb||!fbUser)return;
+  try{
+    await fbDb.collection('vibrelia').doc(fbUser.uid).collection('data').doc(key).set({value:JSON.stringify(val),updated:Date.now()});
+  }catch(e){console.warn('fbPush failed:',key,e.message);}
+}
+
+// ─── PUSH ALL LOCAL DATA TO FIREBASE ───
+async function pushAllToFirebase(){
+  if(!fbDb||!fbUser){toast('Connect Firebase first');return;}
+  setFbStatus('syncing');
+  try{
+    const batch=fbDb.batch();
+    FB_KEYS.forEach(k=>{
+      const raw=localStorage.getItem('vbl_'+k);
+      if(raw){
+        const ref=fbDb.collection('vibrelia').doc(fbUser.uid).collection('data').doc(k);
+        batch.set(ref,{value:raw,updated:Date.now()});
+      }
+    });
+    await batch.commit();
+    setFbStatus('online');
+    toast('All data pushed to cloud ✓','success');
+  }catch(e){setFbStatus('error');toast('Push failed: '+e.message);}
+}
+
+// ─── PULL ALL FROM FIREBASE TO LOCALSTORAGE ───
+async function pullAllFromFirebase(){
+  if(!fbDb||!fbUser){toast('Connect Firebase first');return;}
+  setFbStatus('syncing');
+  try{
+    const snap=await fbDb.collection('vibrelia').doc(fbUser.uid).collection('data').get();
+    snap.forEach(doc=>{localStorage.setItem('vbl_'+doc.id,doc.data().value);});
+    setFbStatus('online');
+    toast('Data pulled from cloud ✓','success');
+    setTimeout(()=>location.reload(),800);
+  }catch(e){setFbStatus('error');toast('Pull failed: '+e.message);}
+}
+
+// ─── INIT FIREBASE FROM SAVED CONFIG ───
+async function initFirebase(){
+  const cfg=DB.getObj('fb-config');
+  if(!cfg||!cfg.apiKey||!cfg.projectId)return;
+  try{
+    if(!firebase.apps.length){
+      fbApp=firebase.initializeApp({apiKey:cfg.apiKey,authDomain:cfg.projectId+'.firebaseapp.com',projectId:cfg.projectId,storageBucket:cfg.projectId+'.appspot.com',appId:cfg.appId||''});
+    } else { fbApp=firebase.apps[0]; }
+    fbAuth=firebase.auth();
+    fbDb=firebase.firestore();
+    // Try to sign in
+    if(cfg.email&&cfg.password){
+      try{
+        const cred=await fbAuth.signInWithEmailAndPassword(cfg.email,cfg.password);
+        fbUser=cred.user;
+        setFbStatus('online');
+        // Pull latest data silently on login
+        await pullSilent();
+      }catch(e){setFbStatus('setup');console.warn('Firebase auth:',e.message);}
+    }
+  }catch(e){console.warn('Firebase init:',e.message);setFbStatus('setup');}
+}
+
+// ─── PULL SILENTLY (no reload, just update localStorage) ───
+async function pullSilent(){
+  if(!fbDb||!fbUser)return;
+  try{
+    const snap=await fbDb.collection('vibrelia').doc(fbUser.uid).collection('data').get();
+    snap.forEach(doc=>{localStorage.setItem('vbl_'+doc.id,doc.data().value);});
+  }catch(e){console.warn('Silent pull:',e.message);}
+}
+
+// ─── CONNECT FROM SETTINGS PAGE ───
+async function connectFirebase(){
+  const apiKey=v('fb-apikey'),projectId=v('fb-projectid'),appId=v('fb-appid'),email=v('fb-email'),password=v('fb-password');
+  if(!apiKey||!projectId||!email||!password){toast('Fill in all Firebase fields');return;}
+  document.getElementById('fb-config-status').textContent='Connecting...';
+  try{
+    if(firebase.apps.length)firebase.apps[0].delete();
+    fbApp=firebase.initializeApp({apiKey,authDomain:projectId+'.firebaseapp.com',projectId,storageBucket:projectId+'.appspot.com',appId});
+    fbAuth=firebase.auth();
+    fbDb=firebase.firestore();
+    const cred=await fbAuth.signInWithEmailAndPassword(email,password);
+    fbUser=cred.user;
+    DB.setObj('fb-config',{apiKey,projectId,appId,email,password});
+    setFbStatus('online');
+    document.getElementById('fb-config-status').textContent='✅ Connected as '+email;
+    toast('Firebase connected!','success');
+    await pushAllToFirebase();
+  }catch(e){
+    document.getElementById('fb-config-status').textContent='❌ Error: '+e.message;
+    toast('Connection failed: '+e.message);
+  }
+}
+
+function disconnectFirebase(){
+  if(!confirm('Disconnect Firebase? Your local data stays safe.'))return;
+  DB.setObj('fb-config',{});
+  fbDb=null;fbUser=null;fbAuth=null;
+  setFbStatus('offline');
+  toast('Firebase disconnected');
+}
+
+// ─── LOAD FIREBASE CONFIG INTO SETTINGS FORM ───
+function loadFirebaseSettings(){
+  const cfg=DB.getObj('fb-config');
+  if(!cfg)return;
+  ['apiKey','projectId','appId','email','password'].forEach(k=>{
+    const el=document.getElementById('fb-'+k.toLowerCase().replace('key','apikey').replace('projectid','projectid'));
+    if(el&&cfg[k])el.value=cfg[k];
+  });
+  if(document.getElementById('fb-apikey')&&cfg.apiKey)document.getElementById('fb-apikey').value=cfg.apiKey||'';
+  if(document.getElementById('fb-projectid')&&cfg.projectId)document.getElementById('fb-projectid').value=cfg.projectId||'';
+  if(document.getElementById('fb-appid')&&cfg.appId)document.getElementById('fb-appid').value=cfg.appId||'';
+  if(document.getElementById('fb-email')&&cfg.email)document.getElementById('fb-email').value=cfg.email||'';
+}
+
+// ─── STATUS INDICATOR ───
+function setFbStatus(state){
+  const pill=document.getElementById('fb-status-pill');
+  const txt=document.getElementById('fb-status-text');
+  if(!pill||!txt)return;
+  pill.className='fb-status';
+  if(state==='online'){pill.classList.add('fb-online');txt.textContent='☁ Synced';}
+  else if(state==='syncing'){pill.classList.add('fb-online');txt.textContent='⟳ Syncing...';}
+  else if(state==='setup'){pill.classList.add('fb-setup');txt.textContent='Set up cloud sync';}
+  else if(state==='error'){pill.classList.add('fb-offline');txt.textContent='Sync error';}
+  else{pill.classList.add('fb-offline');txt.textContent='Local only';}
+}
 const genId=()=>Math.random().toString(36).slice(2,9).toUpperCase();
 const today=()=>new Date().toISOString().split('T')[0];
 const fmt=(d)=>d?new Date(d).toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}):'—';
@@ -1779,14 +1953,14 @@ function importData(e){
   const reader=new FileReader();
   reader.onload=ev=>{try{
     const data=JSON.parse(ev.target.result);
-    Object.entries(data).forEach(([k,v])=>localStorage.setItem('tsc_'+k,JSON.stringify(v)));
+    Object.entries(data).forEach(([k,v])=>localStorage.setItem('vbl_'+k,JSON.stringify(v)));
     toast('Data imported! Refreshing...','success');
     setTimeout(()=>location.reload(),1200);
   }catch{toast('Invalid file')}};
   reader.readAsText(file);
 }
 function clearData(){
-  Object.keys(localStorage).filter(k=>k.startsWith('tsc_')).forEach(k=>localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k=>k.startsWith('vbl_')).forEach(k=>localStorage.removeItem(k));
   toast('Data cleared');setTimeout(()=>location.reload(),800);
 }
 function filterTable(tableId,query){
@@ -2395,6 +2569,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderNotifications();
   loadEmailJS();
   setInterval(renderNotifications,60000);
+  initFirebase();
+  setTimeout(()=>{
+    const cfg=DB.getObj('fb-config');
+    if(!cfg||!cfg.apiKey)setFbStatus('setup');
+  },2000);
 });
 </script>
 </body>
