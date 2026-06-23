@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechServe CRM — Business Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #181c27;
+  --surface2: #1e2333;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8eaf0;
+  --text2: #8b90a0;
+  --text3: #555c70;
+  --accent: #4f8ef7;
+  --accent-dim: rgba(79,142,247,0.12);
+  --accent-border: rgba(79,142,247,0.3);
+  --green: #34c47c;
+  --green-dim: rgba(52,196,124,0.12);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.12);
+  --red: #f05c5c;
+  --red-dim: rgba(240,92,92,0.12);
+  --purple: #9b7fe8;
+  --purple-dim: rgba(155,127,232,0.12);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --sidebar-w: 220px;
+  --font: 'Inter', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;line-height:1.5}
+
+/* Sidebar */
+#sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.brand{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.brand-name{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.2px}
+.brand-tag{font-size:11px;color:var(--text3);margin-top:2px}
+.brand-dot{display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:14px 8px 6px}
+.nav-section:first-child{padding-top:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:1px;border:1px solid transparent;user-select:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8}
+.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;background:var(--accent-dim);color:var(--accent);font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px}
+.sidebar-footer{padding:14px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+.sidebar-footer strong{color:var(--text2);display:block;margin-bottom:2px;font-size:12px}
+
+/* Main */
+#main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:50}
+.page-title{font-size:17px;font-weight:600;color:var(--text)}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.content{padding:28px;flex:1}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text);transition:all .15s;font-family:var(--font)}
+.btn:hover{background:var(--surface);border-color:var(--border2);color:#fff}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#3a7de8;border-color:#3a7de8}
+.btn-green{background:var(--green-dim);border-color:rgba(52,196,124,.3);color:var(--green)}
+.btn-green:hover{background:rgba(52,196,124,.2)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{background:var(--red-dim);border-color:rgba(240,92,92,.3);color:var(--red)}
+.btn svg{width:14px;height:14px}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.stat-val{font-size:26px;font-weight:600;color:var(--text);font-family:var(--mono);letter-spacing:-.5px}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:4px}
+.stat-chip{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;margin-left:6px;font-weight:600}
+.chip-green{background:var(--green-dim);color:var(--green)}
+.chip-amber{background:var(--amber-dim);color:var(--amber)}
+.chip-red{background:var(--red-dim);color:var(--red)}
+.chip-blue{background:var(--accent-dim);color:var(--accent)}
+.chip-purple{background:var(--purple-dim);color:var(--purple)}
+
+/* Table */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px}
+.table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.table-header-left{display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:12px 16px;font-size:13px;color:var(--text)}
+.td-secondary{color:var(--text2)!important;font-size:12px!important}
+.td-mono{font-family:var(--mono);font-size:12px!important}
+
+/* Search */
+.search-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;width:220px;transition:border .15s}
+.search-input::placeholder{color:var(--text3)}
+.search-input:focus{border-color:var(--accent-border)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:600}
+.modal-close{cursor:pointer;color:var(--text3);background:none;border:none;font-size:20px;line-height:1;padding:4px;color:var(--text2)}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid.one{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:500;color:var(--text2)}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;transition:border .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent-border)}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:80px}
+
+/* Status badges */
+.status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+.status::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+.s-lead{background:var(--purple-dim);color:var(--purple)}
+.s-active{background:var(--accent-dim);color:var(--accent)}
+.s-quoted{background:var(--amber-dim);color:var(--amber)}
+.s-completed{background:var(--green-dim);color:var(--green)}
+.s-pending{background:var(--amber-dim);color:var(--amber)}
+.s-paid{background:var(--green-dim);color:var(--green)}
+.s-overdue{background:var(--red-dim);color:var(--red)}
+.s-sent{background:var(--accent-dim);color:var(--accent)}
+.s-approved{background:var(--green-dim);color:var(--green)}
+.s-draft{background:rgba(255,255,255,.06);color:var(--text2)}
+.s-meeting{background:var(--purple-dim);color:var(--purple)}
+.s-call{background:var(--accent-dim);color:var(--accent)}
+.s-todo{background:rgba(255,255,255,.06);color:var(--text2)}
+.s-inprogress{background:var(--accent-dim);color:var(--accent)}
+.s-done{background:var(--green-dim);color:var(--green)}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty h3{font-size:15px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.empty p{font-size:13px}
+
+/* Quick action cards */
+.qa-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.qa-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px}
+.qa-card:hover{border-color:var(--border2);background:var(--surface2)}
+.qa-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.qa-text{font-size:13px;font-weight:500;color:var(--text)}
+.qa-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Activity feed */
+.activity-feed{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.activity-text{font-size:12px;color:var(--text2);line-height:1.5}
+.activity-text strong{color:var(--text);font-weight:500}
+.activity-time{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Two col layout */
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.section-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
+
+/* Invoice preview */
+.invoice-preview{background:#fff;color:#1a1a2e;border-radius:var(--radius);padding:32px;font-size:13px;line-height:1.6}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;border-bottom:2px solid #4f8ef7;padding-bottom:20px}
+.inv-brand{font-size:20px;font-weight:700;color:#1a1a2e;letter-spacing:-.3px}
+.inv-brand-tag{font-size:11px;color:#888;margin-top:2px}
+.inv-meta{text-align:right}
+.inv-title{font-size:22px;font-weight:700;color:#4f8ef7;letter-spacing:-.5px}
+.inv-num{font-size:12px;color:#888;margin-top:2px}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.inv-party-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:6px}
+.inv-party-name{font-size:14px;font-weight:600;color:#1a1a2e}
+.inv-party-detail{font-size:12px;color:#555;margin-top:2px}
+.inv-table{width:100%;border-collapse:collapse;margin-bottom:20px}
+.inv-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:left}
+.inv-table td{padding:10px 10px;border-bottom:1px solid #f3f4f6;font-size:13px;color:#333}
+.inv-table td:last-child,.inv-table th:last-child{text-align:right}
+.inv-totals{margin-left:auto;width:220px}
+.inv-total-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#555}
+.inv-total-row.grand{font-size:16px;font-weight:700;color:#1a1a2e;border-top:2px solid #1a1a2e;padding-top:10px;margin-top:4px}
+.inv-footer{margin-top:28px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:11px;color:#888;text-align:center}
+
+/* Alert */
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:12px;border:1px solid}
+.alert-success{background:var(--green-dim);border-color:rgba(52,196,124,.3);color:var(--green)}
+.alert-info{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent)}
+
+/* Detail panel */
+.detail-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.detail-key{font-size:12px;color:var(--text3)}
+.detail-val{font-size:13px;color:var(--text);font-weight:500;text-align:right}
+
+/* Action bar */
+.action-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+
+/* Pill tabs */
+.tabs{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;margin-bottom:20px;width:fit-content}
+.tab{padding:5px 14px;border-radius:4px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .15s;border:none;background:none;font-family:var(--font)}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+/* WA Preview */
+.wa-bubble{background:#1f3b2e;border-radius:12px 12px 12px 2px;padding:12px 14px;font-size:13px;color:#e3f3e0;line-height:1.6;margin-bottom:8px;max-width:320px;border:1px solid rgba(52,196,124,.15)}
+.wa-time{font-size:10px;color:rgba(255,255,255,.35);text-align:right;margin-top:4px}
+.wa-header{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.wa-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#34c47c,#4f8ef7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff}
+.wa-name{font-size:13px;font-weight:600;color:var(--green)}
+.wa-status{font-size:11px;color:var(--text3)}
+
+/* Notification toast */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 18px;font-size:13px;color:var(--text);z-index:9999;transform:translateY(80px);opacity:0;transition:all .25s;max-width:300px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:rgba(52,196,124,.4);color:var(--green)}
+
+/* Page sections */
+.page{display:none}
+.page.active{display:block}
+
+/* Confirmation page */
+.confirm-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.confirm-check{width:48px;height:48px;background:var(--green-dim);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:22px}
+
+/* Reminder tag */
+.reminder-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--purple-dim);color:var(--purple);border:1px solid rgba(155,127,232,.3)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* Mobile */
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%);transition:transform .25s}
+  #sidebar.open{transform:translateX(0)}
+  #main{margin-left:0}
+  .two-col{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="brand">
+    <div class="brand-name"><span class="brand-dot"></span>TechServe CRM</div>
+    <div class="brand-tag">Business Management System</div>
+  </div>
+  <nav>
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+
+    <div class="nav-section">Clients</div>
+    <div class="nav-item" onclick="showPage('clients')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clients
+      <span class="nav-badge" id="badge-clients">0</span>
+    </div>
+    <div class="nav-item" onclick="showPage('engagements')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Engagements
+    </div>
+
+    <div class="nav-section">Finance</div>
+    <div class="nav-item" onclick="showPage('quotes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Quotes
+      <span class="nav-badge" id="badge-quotes">0</span>
+    </div>
+    <div class="nav-item" onclick="showPage('invoices')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Invoices
+      <span class="nav-badge" id="badge-invoices">0</span>
+    </div>
+    <div class="nav-item" onclick="showPage('payments')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Payments
+    </div>
+
+    <div class="nav-section">Operations</div>
+    <div class="nav-item" onclick="showPage('schedule')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Schedule
+    </div>
+    <div class="nav-item" onclick="showPage('tasks')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Tasks & Projects
+    </div>
+
+    <div class="nav-section">Communicate</div>
+    <div class="nav-item" onclick="showPage('whatsapp')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      WhatsApp Sender
+    </div>
+    <div class="nav-item" onclick="showPage('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <strong id="biz-name-display">Your Tech Business</strong>
+    <span id="biz-location-display">Eldoret, Kenya</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="btn btn-sm" style="display:none" id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="page-title" id="page-title">Dashboard</div>
+    </div>
+    <div class="topbar-actions">
+      <span style="font-size:12px;color:var(--text3)" id="current-date"></span>
+      <button class="btn btn-primary btn-sm" id="topbar-primary-btn" onclick="handleTopbarAction()">+ New Client</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-row" id="dashboard-stats"></div>
+      <div class="two-col">
+        <div>
+          <div class="section-title">Quick actions</div>
+          <div class="qa-grid" id="quick-actions"></div>
+          <div class="section-title" style="margin-top:20px">Recent activity</div>
+          <div class="activity-feed" id="activity-feed">
+            <div class="activity-item"><div class="activity-dot" style="background:var(--accent)"></div><div><div class="activity-text"><strong>System ready</strong> — Add your first client to get started</div><div class="activity-time">Just now</div></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title">Outstanding invoices</div>
+          <div id="dash-invoices"></div>
+          <div class="section-title" style="margin-top:20px">Upcoming meetings</div>
+          <div id="dash-meetings"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENTS ===== -->
+    <div class="page" id="page-clients">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left">
+            <input class="search-input" placeholder="Search clients..." oninput="filterTable('clients-table',this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('client')">+ Add client</button>
+        </div>
+        <table id="clients-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone/WhatsApp</th><th>Service</th><th>Status</th><th>Total billed</th></tr></thead>
+          <tbody id="clients-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== ENGAGEMENTS ===== -->
+    <div class="page" id="page-engagements">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left">
+            <input class="search-input" placeholder="Search engagements..." oninput="filterTable('engagements-table',this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('engagement')">+ Log engagement</button>
+        </div>
+        <table id="engagements-table">
+          <thead><tr><th>Date</th><th>Client</th><th>Type</th><th>Notes</th><th>Follow-up</th></tr></thead>
+          <tbody id="engagements-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== QUOTES ===== -->
+    <div class="page" id="page-quotes">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left">
+            <input class="search-input" placeholder="Search quotes..." oninput="filterTable('quotes-table',this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('quote')">+ New quote</button>
+        </div>
+        <table id="quotes-table">
+          <thead><tr><th>Quote #</th><th>Client</th><th>Service</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="quotes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== INVOICES ===== -->
+    <div class="page" id="page-invoices">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'inv-all')">All</button>
+        <button class="tab" onclick="switchTab(this,'inv-pending')">Pending</button>
+        <button class="tab" onclick="switchTab(this,'inv-paid')">Paid</button>
+        <button class="tab" onclick="switchTab(this,'inv-overdue')">Overdue</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left">
+            <input class="search-input" placeholder="Search invoices..." oninput="filterTable('invoices-table',this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('invoice')">+ New invoice</button>
+        </div>
+        <table id="invoices-table">
+          <thead><tr><th>Invoice #</th><th>Client</th><th>Description</th><th>Amount</th><th>Due date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="invoices-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== PAYMENTS ===== -->
+    <div class="page" id="page-payments">
+      <div class="stats-row" id="payment-stats"></div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left">
+            <input class="search-input" placeholder="Search payments..." oninput="filterTable('payments-table',this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('payment')">+ Record payment</button>
+        </div>
+        <table id="payments-table">
+          <thead><tr><th>Date</th><th>Client</th><th>Invoice #</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+          <tbody id="payments-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== SCHEDULE ===== -->
+    <div class="page" id="page-schedule">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left">
+            <input class="search-input" placeholder="Search meetings..." oninput="filterTable('schedule-table',this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('meeting')">+ Schedule meeting</button>
+        </div>
+        <table id="schedule-table">
+          <thead><tr><th>Date & Time</th><th>Client</th><th>Type</th><th>Agenda</th><th>Status</th><th>Reminder</th><th>Actions</th></tr></thead>
+          <tbody id="schedule-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== TASKS ===== -->
+    <div class="page" id="page-tasks">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-header-left">
+            <input class="search-input" placeholder="Search tasks..." oninput="filterTable('tasks-table',this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('task')">+ New task</button>
+        </div>
+        <table id="tasks-table">
+          <thead><tr><th>Task</th><th>Client / Project</th><th>Priority</th><th>Due date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="tasks-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== WHATSAPP SENDER ===== -->
+    <div class="page" id="page-whatsapp">
+      <div class="two-col">
+        <div>
+          <div class="section-title">Compose WhatsApp message</div>
+          <div class="table-wrap" style="padding:20px">
+            <div class="form-grid one">
+              <div class="form-group">
+                <label>Select client</label>
+                <select id="wa-client" onchange="updateWaPreview()">
+                  <option value="">— choose client —</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Message template</label>
+                <select id="wa-template" onchange="applyTemplate()">
+                  <option value="">— choose template —</option>
+                  <option value="quote">Quote ready notification</option>
+                  <option value="invoice">Invoice sent notification</option>
+                  <option value="payment_request">Payment request</option>
+                  <option value="payment_confirm">Payment confirmation</option>
+                  <option value="meeting_confirm">Meeting confirmation</option>
+                  <option value="meeting_reminder">Meeting reminder</option>
+                  <option value="project_update">Project update</option>
+                  <option value="follow_up">Follow-up message</option>
+                  <option value="custom">Custom message</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Message</label>
+                <textarea id="wa-message" rows="8" placeholder="Your message will appear here..." oninput="updateWaPreview()"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Reference (invoice/quote # or project name)</label>
+                <input id="wa-ref" type="text" placeholder="e.g. INV-001, Q-003" oninput="updateWaPreview()">
+              </div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-green" onclick="sendViaWhatsApp()">📱 Open in WhatsApp</button>
+              <button class="btn btn-primary" onclick="copyWaMessage()">Copy message</button>
+            </div>
+          </div>
+          <div class="section-title" style="margin-top:20px">Message log</div>
+          <div class="table-wrap">
+            <table id="wa-log-table">
+              <thead><tr><th>Date</th><th>Client</th><th>Template</th><th>Status</th></tr></thead>
+              <tbody id="wa-log-tbody"><tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3)">No messages sent yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="section-title">Preview</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+            <div class="wa-header">
+              <div class="wa-avatar" id="wa-avatar-preview">?</div>
+              <div>
+                <div class="wa-name" id="wa-name-preview">Select a client</div>
+                <div class="wa-status">WhatsApp Business</div>
+              </div>
+            </div>
+            <div class="wa-bubble" id="wa-preview">Select a client and template to preview your message.</div>
+          </div>
+          <div class="section-title" style="margin-top:20px">Send confirmation link</div>
+          <div class="table-wrap" style="padding:16px">
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Select client for confirmation</label>
+              <select id="confirm-client">
+                <option value="">— choose client —</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Project / service scope</label>
+              <input type="text" id="confirm-scope" placeholder="e.g. Website design + hosting setup">
+            </div>
+            <div class="form-group" style="margin-bottom:14px">
+              <label>Amount (KES)</label>
+              <input type="number" id="confirm-amount" placeholder="50000">
+            </div>
+            <button class="btn btn-primary" onclick="generateConfirmLink()" style="width:100%">Generate confirmation link</button>
+            <div id="confirm-link-out" style="margin-top:12px;display:none">
+              <div class="alert alert-success">✅ Confirmation link generated!</div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;font-size:11px;font-family:var(--mono);color:var(--text2);word-break:break-all" id="confirm-link-url"></div>
+              <button class="btn btn-sm" style="margin-top:8px;width:100%" onclick="copyConfirmLink()">Copy link</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="page" id="page-settings">
+      <div style="max-width:560px">
+        <div class="table-wrap" style="padding:24px;margin-bottom:20px">
+          <div class="section-title">Business profile</div>
+          <div class="form-grid one">
+            <div class="form-group"><label>Business name</label><input id="s-biz-name" type="text" placeholder="Your Tech Business"></div>
+            <div class="form-group"><label>Your name</label><input id="s-your-name" type="text" placeholder="John Doe"></div>
+            <div class="form-group"><label>Email address</label><input id="s-email" type="email" placeholder="you@techbusiness.co.ke"></div>
+            <div class="form-group"><label>WhatsApp number (with country code)</label><input id="s-phone" type="text" placeholder="+254712345678"></div>
+            <div class="form-group"><label>Location</label><input id="s-location" type="text" placeholder="Eldoret, Kenya"></div>
+            <div class="form-group"><label>Currency</label>
+              <select id="s-currency">
+                <option value="KES">KES — Kenyan Shilling</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="UGX">UGX — Ugandan Shilling</option>
+                <option value="TZS">TZS — Tanzanian Shilling</option>
+                <option value="NGN">NGN — Nigerian Naira</option>
+              </select>
+            </div>
+            <div class="form-group"><label>VAT / PIN number (optional)</label><input id="s-vat" type="text" placeholder="A001234567B"></div>
+            <div class="form-group"><label>Payment instructions / M-Pesa details</label><textarea id="s-payment-info" rows="3" placeholder="M-Pesa Paybill: 123456&#10;Account: Your Name&#10;Or send to: 0712 345 678"></textarea></div>
+            <div class="form-group"><label>Invoice footer note</label><input id="s-invoice-note" type="text" placeholder="Thank you for your business!"></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:16px" onclick="saveSettings()">Save settings</button>
+        </div>
+        <div class="table-wrap" style="padding:20px">
+          <div class="section-title">Data management</div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px">All data is stored in your browser's local storage. Export to JSON to back up your data.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" onclick="exportData()">Export data (JSON)</button>
+            <button class="btn" onclick="document.getElementById('import-file').click()">Import data (JSON)</button>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+            <button class="btn btn-danger" onclick="if(confirm('Clear ALL data? This cannot be undone.'))clearData()">Clear all data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- INVOICE PRINT MODAL -->
+<div class="modal-overlay" id="invoice-print-modal" style="display:none">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <div class="modal-title">Invoice preview</div>
+      <button class="modal-close" onclick="closeModal('invoice-print-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="invoice-print-content"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('invoice-print-modal')">Close</button>
+      <button class="btn btn-green" onclick="printInvoice()">🖨 Print / Save PDF</button>
+      <button class="btn btn-primary" onclick="sendInvoiceViaWA()">📱 Send via WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- DYNAMIC MODAL -->
+<div class="modal-overlay" id="main-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">—</div>
+      <button class="modal-close" onclick="closeModal('main-modal')">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="modal-overlay" id="view-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="view-modal-title">Details</div>
+      <button class="modal-close" onclick="closeModal('view-modal')">×</button>
+    </div>
+    <div class="modal-body" id="view-modal-body"></div>
+    <div class="modal-footer" id="view-modal-footer"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// DATA LAYER
+// ============================================================
+const DB = {
+  get(key){try{return JSON.parse(localStorage.getItem('tsc_'+key))||[]}catch{return[]}},
+  set(key,val){localStorage.setItem('tsc_'+key,JSON.stringify(val))},
+  getObj(key){try{return JSON.parse(localStorage.getItem('tsc_'+key))||{}}catch{return{}}},
+  setObj(key,val){localStorage.setItem('tsc_'+key,JSON.stringify(val))}
+};
+const genId=()=>Math.random().toString(36).slice(2,9).toUpperCase();
+const today=()=>new Date().toISOString().split('T')[0];
+const fmt=(d)=>d?new Date(d).toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}):'—';
+const fmtCur=(n)=>{const s=settings();return(s.currency||'KES')+' '+Number(n||0).toLocaleString()};
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function settings(){return DB.getObj('settings')}
+function saveSettings(){
+  const s={
+    bizName:v('s-biz-name'),yourName:v('s-your-name'),email:v('s-email'),
+    phone:v('s-phone'),location:v('s-location'),currency:v('s-currency'),
+    vat:v('s-vat'),paymentInfo:v('s-payment-info'),invoiceNote:v('s-invoice-note')
+  };
+  DB.setObj('settings',s);
+  document.getElementById('biz-name-display').textContent=s.bizName||'Your Tech Business';
+  document.getElementById('biz-location-display').textContent=s.location||'Eldoret, Kenya';
+  toast('Settings saved','success');
+}
+function loadSettings(){
+  const s=settings();
+  ['bizName','yourName','email','phone','location','currency','vat','paymentInfo','invoiceNote'].forEach(k=>{
+    const el=document.getElementById('s-'+k.replace(/([A-Z])/g,'-$1').toLowerCase());
+    if(el&&s[k])el.value=s[k];
+  });
+  if(s.bizName)document.getElementById('biz-name-display').textContent=s.bizName;
+  if(s.location)document.getElementById('biz-location-display').textContent=s.location;
+}
+
+// ============================================================
+// UI HELPERS
+// ============================================================
+function v(id){const e=document.getElementById(id);return e?e.value.trim():''}
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='show '+(type||'');
+  setTimeout(()=>t.className='',2800);
+}
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))n.classList.add('active')});
+  document.getElementById('page-title').textContent=name.charAt(0).toUpperCase()+name.slice(1).replace('-',' ');
+  const actions={dashboard:'+ New Client',clients:'+ Add client',quotes:'+ New quote',invoices:'+ New invoice',payments:'+ Record payment',schedule:'+ Schedule meeting',tasks:'+ New task',engagements:'+ Log engagement',whatsapp:'📱 Composer',settings:'Save settings'};
+  document.getElementById('topbar-primary-btn').textContent=actions[name]||'+ New';
+  const pageActions={clients:'client',quotes:'quote',invoices:'invoice',payments:'payment',schedule:'meeting',tasks:'task',engagements:'engagement'};
+  const pa=pageActions[name];
+  document.getElementById('topbar-primary-btn').onclick=pa?()=>openModal(pa):(name==='settings'?saveSettings:(name==='whatsapp'?null:null));
+  if(['clients','quotes','invoices','payments','schedule','tasks','whatsapp'].includes(name)){
+    refreshClientDropdowns();
+  }
+  renderPage(name);
+}
+function renderPage(n){
+  if(n==='dashboard')renderDashboard();
+  else if(n==='clients')renderClients();
+  else if(n==='engagements')renderEngagements();
+  else if(n==='quotes')renderQuotes();
+  else if(n==='invoices')renderInvoices();
+  else if(n==='payments')renderPayments();
+  else if(n==='schedule')renderSchedule();
+  else if(n==='tasks')renderTasks();
+}
+function openModal(type){
+  document.getElementById('main-modal').style.display='flex';
+  const forms={
+    client:clientForm,quote:quoteForm,invoice:invoiceForm,
+    payment:paymentForm,meeting:meetingForm,task:taskForm,engagement:engagementForm
+  };
+  if(forms[type])forms[type]();
+}
+function closeModal(id){document.getElementById(id).style.display='none'}
+function filterTable(tableId,query){
+  const q=query.toLowerCase();
+  document.querySelectorAll('#'+tableId+' tbody tr').forEach(tr=>{
+    tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none';
+  });
+}
+function statusBadge(s){
+  const map={lead:'s-lead',active:'s-active',quoted:'s-quoted',completed:'s-completed',
+    pending:'s-pending',paid:'s-paid',overdue:'s-overdue',sent:'s-sent',approved:'s-approved',
+    draft:'s-draft',meeting:'s-meeting',call:'s-call',todo:'s-todo','in-progress':'s-inprogress',done:'s-done'};
+  return`<span class="status ${map[s]||'s-draft'}">${s}</span>`;
+}
+function switchTab(btn,filter){
+  btn.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  currentInvFilter=filter;
+  renderInvoices();
+}
+let currentInvFilter='inv-all';
+function refreshClientDropdowns(){
+  const clients=DB.get('clients');
+  const opts=clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  ['wa-client','confirm-client','quote-client','inv-client','payment-client','meet-client','task-client','eng-client'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){const cur=el.value;el.innerHTML='<option value="">— select client —</option>'+opts;if(cur)el.value=cur;}
+  });
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  const clients=DB.get('clients');
+  const invoices=DB.get('invoices');
+  const payments=DB.get('payments');
+  const tasks=DB.get('tasks');
+  const totalBilled=invoices.reduce((a,i)=>a+Number(i.amount||0),0);
+  const totalPaid=payments.reduce((a,p)=>a+Number(p.amount||0),0);
+  const outstanding=totalBilled-totalPaid;
+  const pending=invoices.filter(i=>i.status==='pending').length;
+  document.getElementById('dashboard-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total clients</div><div class="stat-val">${clients.length}</div><div class="stat-sub">Active relationships</div></div>
+    <div class="stat-card"><div class="stat-label">Total billed</div><div class="stat-val">${fmtCur(totalBilled)}</div><div class="stat-sub">All invoices</div></div>
+    <div class="stat-card"><div class="stat-label">Collected</div><div class="stat-val">${fmtCur(totalPaid)}</div><div class="stat-sub"><span class="stat-chip chip-green">Paid</span></div></div>
+    <div class="stat-card"><div class="stat-label">Outstanding</div><div class="stat-val">${fmtCur(outstanding)}</div><div class="stat-sub">${pending} invoice${pending!==1?'s':''} pending</div></div>
+    <div class="stat-card"><div class="stat-label">Open tasks</div><div class="stat-val">${tasks.filter(t=>t.status!=='done').length}</div><div class="stat-sub">Across all projects</div></div>`;
+  document.getElementById('quick-actions').innerHTML=`
+    <div class="qa-card" onclick="openModal('client')"><div class="qa-icon" style="background:var(--accent-dim)">👤</div><div><div class="qa-text">New client</div><div class="qa-sub">Add to CRM</div></div></div>
+    <div class="qa-card" onclick="openModal('quote')"><div class="qa-icon" style="background:var(--amber-dim)">📄</div><div><div class="qa-text">Send quote</div><div class="qa-sub">Generate & send</div></div></div>
+    <div class="qa-card" onclick="openModal('invoice')"><div class="qa-icon" style="background:var(--purple-dim)">🧾</div><div><div class="qa-text">Create invoice</div><div class="qa-sub">Bill a client</div></div></div>
+    <div class="qa-card" onclick="openModal('meeting')"><div class="qa-icon" style="background:var(--green-dim)">📅</div><div><div class="qa-text">Schedule meeting</div><div class="qa-sub">Add to calendar</div></div></div>
+    <div class="qa-card" onclick="openModal('payment')"><div class="qa-icon" style="background:var(--green-dim)">✅</div><div><div class="qa-text">Record payment</div><div class="qa-sub">Confirm received</div></div></div>
+    <div class="qa-card" onclick="showPage('whatsapp')"><div class="qa-icon" style="background:rgba(52,196,124,.12)">📱</div><div><div class="qa-text">Send WhatsApp</div><div class="qa-sub">Message a client</div></div></div>`;
+  const pendingInvs=invoices.filter(i=>i.status==='pending'||i.status==='overdue').slice(0,5);
+  document.getElementById('dash-invoices').innerHTML=pendingInvs.length?pendingInvs.map(i=>{
+    const c=DB.get('clients').find(x=>x.id===i.clientId);
+    return`<div class="activity-item" onclick="showPage('invoices')" style="cursor:pointer"><div class="activity-dot" style="background:var(--amber)"></div><div><div class="activity-text"><strong>${c?c.name:'Unknown'}</strong> — ${fmtCur(i.amount)}</div><div class="activity-time">${i.invoiceNum} · Due ${fmt(i.dueDate)}</div></div><div style="margin-left:auto">${statusBadge(i.status)}</div></div>`}).join(''):'<div style="padding:16px;font-size:12px;color:var(--text3);text-align:center">No pending invoices</div>';
+  document.getElementById('dash-invoices').className='activity-feed';
+  const meetings=DB.get('meetings').filter(m=>m.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
+  document.getElementById('dash-meetings').innerHTML=meetings.length?meetings.map(m=>{
+    const c=DB.get('clients').find(x=>x.id===m.clientId);
+    return`<div class="activity-item"><div class="activity-dot" style="background:var(--purple)"></div><div><div class="activity-text"><strong>${c?c.name:'?'}</strong> — ${m.type}</div><div class="activity-time">${fmt(m.date)} ${m.time||''}</div></div>${statusBadge(m.status||'meeting')}</div>`}).join(''):'<div style="padding:16px;font-size:12px;color:var(--text3);text-align:center">No upcoming meetings</div>';
+  document.getElementById('dash-meetings').className='activity-feed';
+  updateBadges();
+}
+function updateBadges(){
+  document.getElementById('badge-clients').textContent=DB.get('clients').length;
+  document.getElementById('badge-quotes').textContent=DB.get('quotes').filter(q=>q.status==='sent').length;
+  document.getElementById('badge-invoices').textContent=DB.get('invoices').filter(i=>i.status==='pending'||i.status==='overdue').length;
+}
+
+// ============================================================
+// CLIENTS
+// ============================================================
+function renderClients(){
+  const clients=DB.get('clients');
+  const invoices=DB.get('invoices');
+  const tb=document.getElementById('clients-tbody');
+  if(!clients.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3)">No clients yet. Add your first client!</td></tr>';return}
+  tb.innerHTML=clients.map(c=>{
+    const billed=invoices.filter(i=>i.clientId===c.id).reduce((a,i)=>a+Number(i.amount||0),0);
+    return`<tr onclick="viewClient('${c.id}')">
+      <td><strong>${c.name}</strong></td>
+      <td class="td-secondary">${c.email||'—'}</td>
+      <td class="td-secondary">${c.phone||'—'}</td>
+      <td class="td-secondary">${c.service||'—'}</td>
+      <td>${statusBadge(c.status||'active')}</td>
+      <td class="td-mono">${fmtCur(billed)}</td>
+    </tr>`}).join('');
+}
+function viewClient(id){
+  const c=DB.get('clients').find(x=>x.id===id);if(!c)return;
+  const invoices=DB.get('invoices').filter(i=>i.clientId===id);
+  const paid=DB.get('payments').filter(p=>p.clientId===id).reduce((a,p)=>a+Number(p.amount),0);
+  document.getElementById('view-modal-title').textContent=c.name;
+  document.getElementById('view-modal-body').innerHTML=`
+    <div class="detail-panel">
+      <div class="detail-row"><span class="detail-key">Email</span><span class="detail-val">${c.email||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">WhatsApp / Phone</span><span class="detail-val">${c.phone||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Service</span><span class="detail-val">${c.service||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">${statusBadge(c.status||'active')}</span></div>
+      <div class="detail-row"><span class="detail-key">Total invoiced</span><span class="detail-val">${fmtCur(invoices.reduce((a,i)=>a+Number(i.amount||0),0))}</span></div>
+      <div class="detail-row"><span class="detail-key">Total paid</span><span class="detail-val" style="color:var(--green)">${fmtCur(paid)}</span></div>
+      <div class="detail-row"><span class="detail-key">Notes</span><span class="detail-val" style="max-width:260px;text-align:right">${c.notes||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Added</span><span class="detail-val">${fmt(c.created)}</span></div>
+    </div>`;
+  document.getElementById('view-modal-footer').innerHTML=`
+    <button class="btn btn-sm" onclick="closeModal('view-modal');editClient('${id}')">Edit</button>
+    <button class="btn btn-green btn-sm" onclick="closeModal('view-modal');preWaClient('${id}')">📱 WhatsApp</button>
+    <button class="btn btn-primary btn-sm" onclick="closeModal('view-modal');openModal('invoice')">New invoice</button>`;
+  document.getElementById('view-modal').style.display='flex';
+}
+function preWaClient(id){showPage('whatsapp');document.getElementById('wa-client').value=id;updateWaPreview();}
+function editClient(id){
+  const c=DB.get('clients').find(x=>x.id===id);if(!c)return;
+  clientForm(c);
+}
+function clientForm(existing){
+  const e=existing||{};
+  document.getElementById('modal-title').textContent=e.id?'Edit client':'Add client';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid">
+      <div class="form-group full"><label>Full name *</label><input id="cf-name" value="${e.name||''}" placeholder="Jane Wanjiku"></div>
+      <div class="form-group"><label>Email address</label><input id="cf-email" type="email" value="${e.email||''}" placeholder="jane@company.co.ke"></div>
+      <div class="form-group"><label>WhatsApp / Phone</label><input id="cf-phone" value="${e.phone||''}" placeholder="+254712345678"></div>
+      <div class="form-group full"><label>Service / industry</label><input id="cf-service" value="${e.service||''}" placeholder="e.g. Website, Network setup, Software dev"></div>
+      <div class="form-group"><label>Company (optional)</label><input id="cf-company" value="${e.company||''}" placeholder="Company Ltd"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="cf-status">
+          <option value="lead" ${e.status==='lead'?'selected':''}>Lead</option>
+          <option value="active" ${(!e.status||e.status==='active')?'selected':''}>Active</option>
+          <option value="quoted" ${e.status==='quoted'?'selected':''}>Quoted</option>
+          <option value="completed" ${e.status==='completed'?'selected':''}>Completed</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="cf-notes" placeholder="Any notes about this client...">${e.notes||''}</textarea></div>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML=`
+    <button class="btn" onclick="closeModal('main-modal')">Cancel</button>
+    ${e.id?`<button class="btn btn-danger btn-sm" onclick="deleteRecord('clients','${e.id}');closeModal('main-modal');renderClients()">Delete</button>`:''}
+    <button class="btn btn-primary" onclick="saveClient('${e.id||''}')">Save client</button>`;
+  document.getElementById('main-modal').style.display='flex';
+}
+function saveClient(id){
+  const n=v('cf-name');if(!n)return toast('Name is required');
+  const clients=DB.get('clients');
+  const obj={id:id||genId(),name:n,email:v('cf-email'),phone:v('cf-phone'),service:v('cf-service'),company:v('cf-company'),status:v('cf-status'),notes:v('cf-notes'),created:today()};
+  if(id){const i=clients.findIndex(x=>x.id===id);if(i>=0)clients[i]={...clients[i],...obj};}
+  else clients.push(obj);
+  DB.set('clients',clients);
+  closeModal('main-modal');renderClients();updateBadges();
+  toast((id?'Client updated':'Client added'),'success');
+  addActivity(`${id?'Updated':'Added'} client <strong>${n}</strong>`);
+}
+
+// ============================================================
+// ENGAGEMENTS
+// ============================================================
+function renderEngagements(){
+  const eng=DB.get('engagements');
+  const clients=DB.get('clients');
+  const tb=document.getElementById('engagements-tbody');
+  if(!eng.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text3)">No engagements logged yet.</td></tr>';return}
+  tb.innerHTML=eng.slice().reverse().map(e=>{
+    const c=clients.find(x=>x.id===e.clientId);
+    return`<tr><td>${fmt(e.date)}</td><td><strong>${c?c.name:'Unknown'}</strong></td><td>${statusBadge(e.type)}</td><td class="td-secondary" style="max-width:200px">${e.notes||'—'}</td><td class="td-secondary">${e.followUp?fmt(e.followUp):'—'}</td></tr>`}).join('');
+}
+function engagementForm(){
+  document.getElementById('modal-title').textContent='Log engagement';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid">
+      <div class="form-group full"><label>Client *</label><select id="eng-client"><option value="">— select —</option>${DB.get('clients').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Date</label><input id="eng-date" type="date" value="${today()}"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="eng-type">
+          <option value="call">Call</option>
+          <option value="meeting">Meeting</option>
+          <option value="email">Email</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="site-visit">Site visit</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="eng-notes" placeholder="What was discussed..."></textarea></div>
+      <div class="form-group full"><label>Follow-up date (optional)</label><input id="eng-followup" type="date"></div>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="saveEngagement()">Save</button>`;
+}
+function saveEngagement(){
+  const cid=v('eng-client');if(!cid)return toast('Select a client');
+  const eng=DB.get('engagements');
+  eng.push({id:genId(),clientId:cid,date:v('eng-date'),type:v('eng-type'),notes:v('eng-notes'),followUp:v('eng-followup')});
+  DB.set('engagements',eng);closeModal('main-modal');renderEngagements();toast('Engagement logged','success');
+}
+
+// ============================================================
+// QUOTES
+// ============================================================
+let quoteLineItems=[];
+function renderQuotes(){
+  const quotes=DB.get('quotes');
+  const clients=DB.get('clients');
+  const tb=document.getElementById('quotes-tbody');
+  if(!quotes.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No quotes yet.</td></tr>';return}
+  tb.innerHTML=quotes.slice().reverse().map(q=>{
+    const c=clients.find(x=>x.id===q.clientId);
+    return`<tr>
+      <td class="td-mono">${q.quoteNum}</td>
+      <td><strong>${c?c.name:'?'}</strong></td>
+      <td class="td-secondary">${q.service||'—'}</td>
+      <td class="td-mono">${fmtCur(q.total)}</td>
+      <td>${statusBadge(q.status)}</td>
+      <td class="td-secondary">${fmt(q.date)}</td>
+      <td>
+        <button class="btn btn-sm" onclick="previewQuote('${q.id}')">View</button>
+        ${q.status!=='approved'?`<button class="btn btn-green btn-sm" onclick="approveQuote('${q.id}')">Approve</button>`:''}
+        <button class="btn btn-sm" onclick="sendQuoteWA('${q.id}')">📱</button>
+      </td>
+    </tr>`}).join('');
+}
+function quoteForm(){
+  quoteLineItems=[{desc:'',qty:1,rate:0}];
+  const nextNum='Q-'+(DB.get('quotes').length+1).toString().padStart(3,'0');
+  document.getElementById('modal-title').textContent='New quote';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid" style="margin-bottom:14px">
+      <div class="form-group"><label>Quote number</label><input id="quote-num" value="${nextNum}" readonly style="opacity:.6"></div>
+      <div class="form-group"><label>Date</label><input id="quote-date" type="date" value="${today()}"></div>
+      <div class="form-group full"><label>Client *</label><select id="quote-client"><option value="">—</option>${DB.get('clients').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div class="form-group full"><label>Service / project title</label><input id="quote-service" placeholder="e.g. Website development & hosting"></div>
+      <div class="form-group"><label>Valid until</label><input id="quote-expiry" type="date" value="${new Date(Date.now()+7*864e5).toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>Status</label><select id="quote-status"><option value="draft">Draft</option><option value="sent" selected>Sent</option></select></div>
+    </div>
+    <div class="section-title">Line items</div>
+    <div id="quote-lines"></div>
+    <button class="btn btn-sm" style="margin-bottom:14px" onclick="addQuoteLine()">+ Add line</button>
+    <div style="display:flex;justify-content:flex-end"><div style="min-width:200px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text2)"><span>Subtotal</span><span class="td-mono" id="q-subtotal">KES 0</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text2)">
+        <span>VAT (16%) <input type="checkbox" id="q-vat" onchange="calcQTotal()"> Apply</span>
+        <span class="td-mono" id="q-vat-amt">KES 0</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;font-weight:600;border-top:1px solid var(--border);color:var(--text)"><span>Total</span><span class="td-mono" id="q-total">KES 0</span></div>
+    </div></div>
+    <div class="form-group" style="margin-top:10px"><label>Notes / terms</label><textarea id="quote-notes" rows="2" placeholder="Payment terms, delivery timeline..."></textarea></div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="saveQuote()">Save quote</button>`;
+  renderQuoteLines();
+}
+function renderQuoteLines(){
+  document.getElementById('quote-lines').innerHTML=quoteLineItems.map((l,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 60px 90px 30px;gap:6px;margin-bottom:6px;align-items:center">
+      <input style="font-size:12px;padding:6px 8px" placeholder="Description" value="${l.desc}" oninput="quoteLineItems[${i}].desc=this.value">
+      <input style="font-size:12px;padding:6px 8px;text-align:center" type="number" min="1" value="${l.qty}" oninput="quoteLineItems[${i}].qty=+this.value;calcQTotal()">
+      <input style="font-size:12px;padding:6px 8px" type="number" min="0" value="${l.rate}" placeholder="Rate" oninput="quoteLineItems[${i}].rate=+this.value;calcQTotal()">
+      <button class="btn btn-sm" style="padding:5px 8px;color:var(--red)" onclick="quoteLineItems.splice(${i},1);renderQuoteLines()">×</button>
+    </div>`).join('');
+  calcQTotal();
+}
+function addQuoteLine(){quoteLineItems.push({desc:'',qty:1,rate:0});renderQuoteLines();}
+function calcQTotal(){
+  const sub=quoteLineItems.reduce((a,l)=>a+(l.qty*l.rate),0);
+  const useVat=document.getElementById('q-vat')&&document.getElementById('q-vat').checked;
+  const vat=useVat?sub*0.16:0;
+  const cur=settings().currency||'KES';
+  document.getElementById('q-subtotal').textContent=cur+' '+sub.toLocaleString();
+  document.getElementById('q-vat-amt').textContent=cur+' '+vat.toLocaleString();
+  document.getElementById('q-total').textContent=cur+' '+(sub+vat).toLocaleString();
+}
+function saveQuote(){
+  const cid=v('quote-client');if(!cid)return toast('Select a client');
+  const sub=quoteLineItems.reduce((a,l)=>a+(l.qty*l.rate),0);
+  const vat=document.getElementById('q-vat').checked?sub*.16:0;
+  const quotes=DB.get('quotes');
+  const q={id:genId(),quoteNum:v('quote-num'),clientId:cid,service:v('quote-service'),date:v('quote-date'),expiry:v('quote-expiry'),status:v('quote-status'),lineItems:quoteLineItems,subtotal:sub,vat,total:sub+vat,notes:v('quote-notes')};
+  quotes.push(q);DB.set('quotes',quotes);
+  const c=DB.get('clients').find(x=>x.id===cid);
+  closeModal('main-modal');renderQuotes();updateBadges();
+  toast('Quote saved','success');
+  addActivity(`Created quote <strong>${q.quoteNum}</strong> for <strong>${c?c.name:''}</strong>`);
+}
+function approveQuote(id){
+  const quotes=DB.get('quotes');
+  const q=quotes.find(x=>x.id===id);if(!q)return;
+  q.status='approved';DB.set('quotes',quotes);renderQuotes();
+  toast('Quote approved! You can now create an invoice.','success');
+}
+function previewQuote(id){
+  const q=DB.get('quotes').find(x=>x.id===id);if(!q)return;
+  const c=DB.get('clients').find(x=>x.id===q.clientId);
+  const s=settings();
+  document.getElementById('invoice-print-content').innerHTML=`
+    <div class="invoice-preview">
+      <div class="inv-header">
+        <div><div class="inv-brand">${s.bizName||'TechServe'}</div><div class="inv-brand-tag">${s.location||'Eldoret, Kenya'}</div><div class="inv-brand-tag">${s.email||''}</div></div>
+        <div class="inv-meta"><div class="inv-title">QUOTE</div><div class="inv-num">${q.quoteNum}</div><div class="inv-num">Date: ${fmt(q.date)}</div><div class="inv-num">Valid until: ${fmt(q.expiry)}</div></div>
+      </div>
+      <div class="inv-parties">
+        <div><div class="inv-party-label">From</div><div class="inv-party-name">${s.bizName||'TechServe'}</div><div class="inv-party-detail">${s.email||''}</div><div class="inv-party-detail">${s.phone||''}</div></div>
+        <div><div class="inv-party-label">Quote for</div><div class="inv-party-name">${c?c.name:'Client'}</div><div class="inv-party-detail">${c?c.email||'':''}</div><div class="inv-party-detail">${c?c.phone||'':''}</div></div>
+      </div>
+      <table class="inv-table"><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>${q.lineItems.map(l=>`<tr><td>${l.desc}</td><td style="text-align:center">${l.qty}</td><td style="text-align:right">${(s.currency||'KES')} ${Number(l.rate).toLocaleString()}</td><td style="text-align:right">${(s.currency||'KES')} ${(l.qty*l.rate).toLocaleString()}</td></tr>`).join('')}</tbody></table>
+      <div class="inv-totals">
+        <div class="inv-total-row"><span>Subtotal</span><span>${(s.currency||'KES')} ${Number(q.subtotal||0).toLocaleString()}</span></div>
+        ${q.vat?`<div class="inv-total-row"><span>VAT (16%)</span><span>${(s.currency||'KES')} ${Number(q.vat).toLocaleString()}</span></div>`:''}
+        <div class="inv-total-row grand"><span>Total</span><span>${(s.currency||'KES')} ${Number(q.total).toLocaleString()}</span></div>
+      </div>
+      ${q.notes?`<div style="margin-top:16px;font-size:12px;color:#555"><strong>Notes:</strong> ${q.notes}</div>`:''}
+      <div class="inv-footer">${s.invoiceNote||'Thank you for your business!'}</div>
+    </div>`;
+  document.getElementById('invoice-print-modal').style.display='flex';
+}
+function sendQuoteWA(id){
+  const q=DB.get('quotes').find(x=>x.id===id);if(!q)return;
+  const c=DB.get('clients').find(x=>x.id===q.clientId);if(!c||!c.phone)return toast('Client has no phone number');
+  const s=settings();
+  const msg=encodeURIComponent(`Hello ${c.name},\n\nYour quote *${q.quoteNum}* is ready.\n\n📋 *${q.service||'Tech Services'}*\n💰 Total: *${fmtCur(q.total)}*\nValid until: ${fmt(q.expiry)}\n\nPlease reply ✅ to approve or ❌ to request changes.\n\n${q.notes||''}\n\n— ${s.bizName||'TechServe'}`);
+  window.open(`https://wa.me/${c.phone.replace(/[^0-9]/g,'')}?text=${msg}`,'_blank');
+}
+
+// ============================================================
+// INVOICES
+// ============================================================
+let invLineItems=[];
+function renderInvoices(filter){
+  let invoices=DB.get('invoices');
+  const f=filter||currentInvFilter;
+  if(f==='inv-pending')invoices=invoices.filter(i=>i.status==='pending');
+  else if(f==='inv-paid')invoices=invoices.filter(i=>i.status==='paid');
+  else if(f==='inv-overdue')invoices=invoices.filter(i=>i.status==='overdue');
+  const clients=DB.get('clients');
+  const tb=document.getElementById('invoices-tbody');
+  if(!invoices.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No invoices found.</td></tr>';return}
+  tb.innerHTML=invoices.slice().reverse().map(inv=>{
+    const c=clients.find(x=>x.id===inv.clientId);
+    return`<tr>
+      <td class="td-mono">${inv.invoiceNum}</td>
+      <td><strong>${c?c.name:'?'}</strong></td>
+      <td class="td-secondary" style="max-width:160px">${inv.description||'—'}</td>
+      <td class="td-mono">${fmtCur(inv.amount)}</td>
+      <td class="td-secondary">${fmt(inv.dueDate)}</td>
+      <td>${statusBadge(inv.status)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" onclick="previewInvoice('${inv.id}')">View</button>
+        ${inv.status!=='paid'?`<button class="btn btn-green btn-sm" onclick="markPaid('${inv.id}')">Mark paid</button>`:''}
+        <button class="btn btn-sm" onclick="sendInvoiceViaWAById('${inv.id}')">📱</button>
+      </td>
+    </tr>`}).join('');
+}
+function invoiceForm(prefillClientId,prefillDesc,prefillAmt){
+  invLineItems=[{desc:prefillDesc||'',qty:1,rate:prefillAmt||0}];
+  const nextNum='INV-'+(DB.get('invoices').length+1).toString().padStart(3,'0');
+  const due=new Date(Date.now()+14*864e5).toISOString().split('T')[0];
+  document.getElementById('modal-title').textContent='New invoice';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid" style="margin-bottom:14px">
+      <div class="form-group"><label>Invoice number</label><input id="inv-num" value="${nextNum}" readonly style="opacity:.6"></div>
+      <div class="form-group"><label>Invoice date</label><input id="inv-date" type="date" value="${today()}"></div>
+      <div class="form-group full"><label>Client *</label><select id="inv-client"><option value="">—</option>${DB.get('clients').map(c=>`<option value="${c.id}" ${c.id===prefillClientId?'selected':''}>${c.name}</option>`).join('')}</select></div>
+      <div class="form-group full"><label>Project / description</label><input id="inv-desc" value="${prefillDesc||''}" placeholder="e.g. Website development — Phase 1"></div>
+      <div class="form-group"><label>Due date</label><input id="inv-due" type="date" value="${due}"></div>
+      <div class="form-group"><label>Status</label><select id="inv-status"><option value="pending" selected>Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>
+    </div>
+    <div class="section-title">Line items</div>
+    <div id="inv-lines"></div>
+    <button class="btn btn-sm" style="margin-bottom:14px" onclick="addInvLine()">+ Add line</button>
+    <div style="display:flex;justify-content:flex-end"><div style="min-width:200px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text2)"><span>Subtotal</span><span class="td-mono" id="i-subtotal">KES 0</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text2)">
+        <span>VAT (16%) <input type="checkbox" id="i-vat" onchange="calcInvTotal()"> Apply</span>
+        <span class="td-mono" id="i-vat-amt">KES 0</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:15px;font-weight:600;border-top:1px solid var(--border);color:var(--text)"><span>Total</span><span class="td-mono" id="i-total">KES 0</span></div>
+    </div></div>
+    <div class="form-group" style="margin-top:10px"><label>Payment instructions</label><textarea id="inv-payment" rows="2">${settings().paymentInfo||''}</textarea></div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="saveInvoice()">Save invoice</button>`;
+  document.getElementById('main-modal').style.display='flex';
+  renderInvLines();
+}
+function renderInvLines(){
+  document.getElementById('inv-lines').innerHTML=invLineItems.map((l,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 60px 90px 30px;gap:6px;margin-bottom:6px;align-items:center">
+      <input style="font-size:12px;padding:6px 8px" placeholder="Description" value="${l.desc}" oninput="invLineItems[${i}].desc=this.value">
+      <input style="font-size:12px;padding:6px 8px;text-align:center" type="number" min="1" value="${l.qty}" oninput="invLineItems[${i}].qty=+this.value;calcInvTotal()">
+      <input style="font-size:12px;padding:6px 8px" type="number" min="0" value="${l.rate}" placeholder="Rate" oninput="invLineItems[${i}].rate=+this.value;calcInvTotal()">
+      <button class="btn btn-sm" style="padding:5px 8px;color:var(--red)" onclick="invLineItems.splice(${i},1);renderInvLines()">×</button>
+    </div>`).join('');
+  calcInvTotal();
+}
+function addInvLine(){invLineItems.push({desc:'',qty:1,rate:0});renderInvLines();}
+function calcInvTotal(){
+  const sub=invLineItems.reduce((a,l)=>a+(l.qty*l.rate),0);
+  const useVat=document.getElementById('i-vat')&&document.getElementById('i-vat').checked;
+  const vat=useVat?sub*.16:0;
+  const cur=settings().currency||'KES';
+  document.getElementById('i-subtotal').textContent=cur+' '+sub.toLocaleString();
+  document.getElementById('i-vat-amt').textContent=cur+' '+vat.toLocaleString();
+  document.getElementById('i-total').textContent=cur+' '+(sub+vat).toLocaleString();
+}
+function saveInvoice(){
+  const cid=v('inv-client');if(!cid)return toast('Select a client');
+  const sub=invLineItems.reduce((a,l)=>a+(l.qty*l.rate),0);
+  const vat=document.getElementById('i-vat').checked?sub*.16:0;
+  const invoices=DB.get('invoices');
+  const inv={id:genId(),invoiceNum:v('inv-num'),clientId:cid,description:v('inv-desc'),date:v('inv-date'),dueDate:v('inv-due'),status:v('inv-status'),lineItems:invLineItems,subtotal:sub,vat,amount:sub+vat,paymentInfo:v('inv-payment')};
+  invoices.push(inv);DB.set('invoices',invoices);
+  const c=DB.get('clients').find(x=>x.id===cid);
+  closeModal('main-modal');renderInvoices();updateBadges();
+  toast('Invoice saved','success');
+  addActivity(`Created invoice <strong>${inv.invoiceNum}</strong> for <strong>${c?c.name:''}</strong>`);
+}
+function markPaid(id){
+  const invoices=DB.get('invoices');
+  const inv=invoices.find(x=>x.id===id);if(!inv)return;
+  inv.status='paid';inv.paidDate=today();DB.set('invoices',invoices);
+  renderInvoices();toast('Invoice marked as paid','success');
+  addActivity(`Payment received for invoice <strong>${inv.invoiceNum}</strong>`);
+}
+function previewInvoice(id){
+  const inv=DB.get('invoices').find(x=>x.id===id);if(!inv)return;
+  const c=DB.get('clients').find(x=>x.id===inv.clientId);
+  const s=settings();
+  document.getElementById('invoice-print-content').innerHTML=`
+    <div class="invoice-preview" id="printable-inv">
+      <div class="inv-header">
+        <div><div class="inv-brand">${s.bizName||'TechServe'}</div><div class="inv-brand-tag">${s.location||'Eldoret, Kenya'}</div><div class="inv-brand-tag">${s.email||''} · ${s.phone||''}</div>${s.vat?`<div class="inv-brand-tag">PIN: ${s.vat}</div>`:''}</div>
+        <div class="inv-meta"><div class="inv-title">INVOICE</div><div class="inv-num">${inv.invoiceNum}</div><div class="inv-num">Date: ${fmt(inv.date)}</div><div class="inv-num">Due: ${fmt(inv.dueDate)}</div><div style="margin-top:8px">${statusBadge(inv.status)}</div></div>
+      </div>
+      <div class="inv-parties">
+        <div><div class="inv-party-label">From</div><div class="inv-party-name">${s.bizName||'TechServe'}</div><div class="inv-party-detail">${s.email||''}</div><div class="inv-party-detail">${s.phone||''}</div></div>
+        <div><div class="inv-party-label">Bill to</div><div class="inv-party-name">${c?c.name:'Client'}</div><div class="inv-party-detail">${c?c.email||'':''}</div><div class="inv-party-detail">${c?c.phone||'':''}</div>${c&&c.company?`<div class="inv-party-detail">${c.company}</div>`:''}</div>
+      </div>
+      ${inv.description?`<div style="background:#f9fafb;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#555"><strong>Project:</strong> ${inv.description}</div>`:''}
+      <table class="inv-table"><thead><tr><th>Description</th><th>Qty</th><th>Rate (${s.currency||'KES'})</th><th>Amount (${s.currency||'KES'})</th></tr></thead>
+      <tbody>${(inv.lineItems||[{desc:inv.description||'Services',qty:1,rate:inv.subtotal||inv.amount}]).map(l=>`<tr><td>${l.desc}</td><td style="text-align:center">${l.qty}</td><td style="text-align:right">${Number(l.rate).toLocaleString()}</td><td style="text-align:right">${(l.qty*l.rate).toLocaleString()}</td></tr>`).join('')}</tbody></table>
+      <div class="inv-totals">
+        <div class="inv-total-row"><span>Subtotal</span><span>${(s.currency||'KES')} ${Number(inv.subtotal||inv.amount).toLocaleString()}</span></div>
+        ${inv.vat?`<div class="inv-total-row"><span>VAT (16%)</span><span>${(s.currency||'KES')} ${Number(inv.vat).toLocaleString()}</span></div>`:''}
+        <div class="inv-total-row grand"><span>TOTAL DUE</span><span>${(s.currency||'KES')} ${Number(inv.amount).toLocaleString()}</span></div>
+      </div>
+      ${inv.paymentInfo?`<div style="margin-top:20px;background:#f0fdf4;border-radius:6px;padding:12px 14px;border:1px solid #bbf7d0"><div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#166534;margin-bottom:6px">Payment details</div><pre style="font-size:12px;color:#166534;white-space:pre-wrap;font-family:inherit">${inv.paymentInfo}</pre></div>`:''}
+      <div class="inv-footer">${s.invoiceNote||'Thank you for your business!'}</div>
+    </div>`;
+  document.getElementById('invoice-print-modal').style.display='flex';
+  document.getElementById('invoice-print-modal').dataset.invId=id;
+}
+function printInvoice(){window.print();}
+function sendInvoiceViaWA(){const id=document.getElementById('invoice-print-modal').dataset.invId;if(id)sendInvoiceViaWAById(id);}
+function sendInvoiceViaWAById(id){
+  const inv=DB.get('invoices').find(x=>x.id===id);if(!inv)return;
+  const c=DB.get('clients').find(x=>x.id===inv.clientId);if(!c||!c.phone)return toast('Client has no phone number');
+  const s=settings();
+  const msg=encodeURIComponent(`Hello ${c.name},\n\nYour invoice *${inv.invoiceNum}* is ready.\n\n🧾 *${inv.description||'Tech Services'}*\n💰 Amount: *${fmtCur(inv.amount)}*\n📅 Due: ${fmt(inv.dueDate)}\n\n${inv.paymentInfo?'💳 *Payment details:*\n'+inv.paymentInfo+'\n':''}\nPlease confirm receipt.\n\n— ${s.bizName||'TechServe'}`);
+  window.open(`https://wa.me/${c.phone.replace(/[^0-9]/g,'')}?text=${msg}`,'_blank');
+  addActivity(`Sent invoice <strong>${inv.invoiceNum}</strong> via WhatsApp to <strong>${c.name}</strong>`);
+}
+
+// ============================================================
+// PAYMENTS
+// ============================================================
+function renderPayments(){
+  const payments=DB.get('payments');
+  const clients=DB.get('clients');
+  const invoices=DB.get('invoices');
+  const total=payments.reduce((a,p)=>a+Number(p.amount),0);
+  const mpesa=payments.filter(p=>p.method==='M-Pesa').reduce((a,p)=>a+Number(p.amount),0);
+  document.getElementById('payment-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total collected</div><div class="stat-val">${fmtCur(total)}</div></div>
+    <div class="stat-card"><div class="stat-label">Via M-Pesa</div><div class="stat-val">${fmtCur(mpesa)}</div></div>
+    <div class="stat-card"><div class="stat-label">Transactions</div><div class="stat-val">${payments.length}</div></div>`;
+  const tb=document.getElementById('payments-tbody');
+  if(!payments.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No payments recorded yet.</td></tr>';return}
+  tb.innerHTML=payments.slice().reverse().map(p=>{
+    const c=clients.find(x=>x.id===p.clientId);
+    const inv=invoices.find(x=>x.id===p.invoiceId);
+    return`<tr><td>${fmt(p.date)}</td><td><strong>${c?c.name:'?'}</strong></td><td class="td-mono">${inv?inv.invoiceNum:'—'}</td><td class="td-mono">${fmtCur(p.amount)}</td><td>${p.method||'—'}</td><td class="td-secondary td-mono">${p.reference||'—'}</td><td>${statusBadge('paid')}</td></tr>`}).join('');
+}
+function paymentForm(){
+  document.getElementById('modal-title').textContent='Record payment';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid">
+      <div class="form-group full"><label>Client *</label><select id="payment-client" onchange="loadClientInvoices()"><option value="">—</option>${DB.get('clients').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div class="form-group full"><label>Invoice</label><select id="payment-inv"><option value="">— select client first —</option></select></div>
+      <div class="form-group"><label>Amount received *</label><input id="payment-amount" type="number" placeholder="e.g. 25000"></div>
+      <div class="form-group"><label>Date received</label><input id="payment-date" type="date" value="${today()}"></div>
+      <div class="form-group"><label>Payment method</label>
+        <select id="payment-method">
+          <option>M-Pesa</option><option>Bank transfer</option><option>Cash</option><option>Cheque</option><option>Card</option><option>PayPal</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>M-Pesa / reference code</label><input id="payment-ref" placeholder="e.g. QAB1X23YZ"></div>
+      <div class="form-group full"><label>Notes</label><input id="payment-notes" placeholder="Optional notes"></div>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="savePayment()">Record payment</button>`;
+}
+function loadClientInvoices(){
+  const cid=v('payment-client');
+  const invs=DB.get('invoices').filter(i=>i.clientId===cid&&i.status!=='paid');
+  const el=document.getElementById('payment-inv');
+  el.innerHTML='<option value="">— select invoice —</option>'+invs.map(i=>`<option value="${i.id}">${i.invoiceNum} — ${fmtCur(i.amount)}</option>`).join('');
+}
+function savePayment(){
+  const cid=v('payment-client'),amt=v('payment-amount');
+  if(!cid||!amt)return toast('Client and amount are required');
+  const payments=DB.get('payments');
+  const invId=v('payment-inv');
+  payments.push({id:genId(),clientId:cid,invoiceId:invId,amount:+amt,date:v('payment-date'),method:v('payment-method'),reference:v('payment-ref'),notes:v('payment-notes')});
+  DB.set('payments',payments);
+  if(invId){const invs=DB.get('invoices');const inv=invs.find(x=>x.id===invId);if(inv){inv.status='paid';inv.paidDate=today();DB.set('invoices',invs);}}
+  const c=DB.get('clients').find(x=>x.id===cid);
+  closeModal('main-modal');renderPayments();updateBadges();
+  toast('Payment recorded','success');
+  addActivity(`Payment of <strong>${fmtCur(amt)}</strong> received from <strong>${c?c.name:''}</strong>`);
+}
+
+// ============================================================
+// SCHEDULE
+// ============================================================
+function renderSchedule(){
+  const meetings=DB.get('meetings');
+  const clients=DB.get('clients');
+  const tb=document.getElementById('schedule-tbody');
+  if(!meetings.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No meetings scheduled.</td></tr>';return}
+  tb.innerHTML=meetings.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(m=>{
+    const c=clients.find(x=>x.id===m.clientId);
+    const isPast=m.date<today();
+    return`<tr style="${isPast?'opacity:.55':''}">
+      <td><strong>${fmt(m.date)}</strong><div class="td-secondary">${m.time||''}</div></td>
+      <td>${c?c.name:'?'}</td>
+      <td>${statusBadge(m.type||'meeting')}</td>
+      <td class="td-secondary">${m.agenda||'—'}</td>
+      <td>${statusBadge(isPast?'completed':m.status||'meeting')}</td>
+      <td>${m.reminder?'<span class="reminder-tag">🔔 Set</span>':'—'}</td>
+      <td><button class="btn btn-sm" onclick="sendMeetingWA('${m.id}')">📱 Remind</button></td>
+    </tr>`}).join('');
+}
+function meetingForm(){
+  document.getElementById('modal-title').textContent='Schedule meeting';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid">
+      <div class="form-group full"><label>Client *</label><select id="meet-client"><option value="">—</option>${DB.get('clients').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div class="form-group"><label>Date *</label><input id="meet-date" type="date" value="${today()}"></div>
+      <div class="form-group"><label>Time</label><input id="meet-time" type="time" value="10:00"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="meet-type"><option value="meeting">In-person meeting</option><option value="call">Phone/video call</option><option value="site-visit">Site visit</option><option value="demo">Demo / presentation</option></select>
+      </div>
+      <div class="form-group"><label>Duration</label>
+        <select id="meet-duration"><option>30 minutes</option><option>1 hour</option><option>1.5 hours</option><option>2 hours</option><option>Half day</option></select>
+      </div>
+      <div class="form-group full"><label>Location / link</label><input id="meet-location" placeholder="e.g. Client office, Zoom link, Google Meet..."></div>
+      <div class="form-group full"><label>Agenda</label><textarea id="meet-agenda" rows="3" placeholder="Topics to discuss..."></textarea></div>
+      <div class="form-group full"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="meet-reminder"> Send WhatsApp reminder to client</label></div>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="saveMeeting()">Schedule</button>`;
+}
+function saveMeeting(){
+  const cid=v('meet-client'),date=v('meet-date');
+  if(!cid||!date)return toast('Client and date are required');
+  const meetings=DB.get('meetings');
+  const m={id:genId(),clientId:cid,date,time:v('meet-time'),type:v('meet-type'),duration:v('meet-duration'),location:v('meet-location'),agenda:v('meet-agenda'),reminder:document.getElementById('meet-reminder').checked,status:'meeting'};
+  meetings.push(m);DB.set('meetings',meetings);
+  const c=DB.get('clients').find(x=>x.id===cid);
+  if(m.reminder)sendMeetingWA(m.id,true);
+  closeModal('main-modal');renderSchedule();
+  toast('Meeting scheduled','success');
+  addActivity(`Scheduled meeting with <strong>${c?c.name:''}</strong> on ${fmt(date)}`);
+}
+function sendMeetingWA(id,auto){
+  const m=DB.get('meetings').find(x=>x.id===id);if(!m)return;
+  const c=DB.get('clients').find(x=>x.id===m.clientId);if(!c||!c.phone)return toast('Client has no phone number');
+  const s=settings();
+  const msg=encodeURIComponent(`Hello ${c.name},\n\n📅 *Meeting Confirmation*\n\nDate: *${fmt(m.date)}*\nTime: *${m.time||'TBD'}*\nType: ${m.type||'Meeting'}\nDuration: ${m.duration||'1 hour'}\nLocation: ${m.location||'To be confirmed'}\n\n📋 *Agenda:*\n${m.agenda||'General discussion'}\n\nPlease confirm by replying ✅ or let me know if you need to reschedule.\n\n— ${s.bizName||'TechServe'}`);
+  window.open(`https://wa.me/${c.phone.replace(/[^0-9]/g,'')}?text=${msg}`,'_blank');
+}
+
+// ============================================================
+// TASKS
+// ============================================================
+function renderTasks(){
+  const tasks=DB.get('tasks');
+  const clients=DB.get('clients');
+  const tb=document.getElementById('tasks-tbody');
+  if(!tasks.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3)">No tasks yet.</td></tr>';return}
+  tb.innerHTML=tasks.slice().reverse().map(t=>{
+    const c=clients.find(x=>x.id===t.clientId);
+    const pColors={high:'var(--red)',medium:'var(--amber)',low:'var(--text3)'};
+    return`<tr>
+      <td><strong>${t.title}</strong>${t.notes?`<div class="td-secondary">${t.notes}</div>`:''}</td>
+      <td>${c?c.name:'—'}<div class="td-secondary">${t.project||''}</div></td>
+      <td><span style="color:${pColors[t.priority]||'var(--text2)'}">●</span> ${t.priority||'medium'}</td>
+      <td class="td-secondary">${fmt(t.dueDate)}</td>
+      <td>${statusBadge(t.status||'todo')}</td>
+      <td style="white-space:nowrap">
+        ${t.status!=='done'?`<button class="btn btn-green btn-sm" onclick="completeTask('${t.id}')">Done</button>`:''}
+        <button class="btn btn-sm btn-danger" onclick="deleteRecord('tasks','${t.id}');renderTasks()">×</button>
+      </td>
+    </tr>`}).join('');
+}
+function taskForm(){
+  document.getElementById('modal-title').textContent='New task';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-grid">
+      <div class="form-group full"><label>Task title *</label><input id="task-title" placeholder="e.g. Configure server, Design logo, Fix bug..."></div>
+      <div class="form-group full"><label>Client</label><select id="task-client"><option value="">— general task —</option>${DB.get('clients').map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div class="form-group full"><label>Project name</label><input id="task-project" placeholder="e.g. Website redesign, Network setup..."></div>
+      <div class="form-group"><label>Due date</label><input id="task-due" type="date"></div>
+      <div class="form-group"><label>Priority</label>
+        <select id="task-priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="task-status"><option value="todo">To do</option><option value="in-progress">In progress</option><option value="done">Done</option></select>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="task-notes" placeholder="Additional details..."></textarea></div>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn" onclick="closeModal('main-modal')">Cancel</button><button class="btn btn-primary" onclick="saveTask()">Save task</button>`;
+}
+function saveTask(){
+  const title=v('task-title');if(!title)return toast('Task title required');
+  const tasks=DB.get('tasks');
+  tasks.push({id:genId(),title,clientId:v('task-client'),project:v('task-project'),dueDate:v('task-due'),priority:v('task-priority'),status:v('task-status'),notes:v('task-notes'),created:today()});
+  DB.set('tasks',tasks);closeModal('main-modal');renderTasks();toast('Task saved','success');
+}
+function completeTask(id){
+  const tasks=DB.get('tasks');
+  const t=tasks.find(x=>x.id===id);if(t){t.status='done';t.completedDate=today();}
+  DB.set('tasks',tasks);renderTasks();toast('Task completed ✓','success');
+}
+
+// ============================================================
+// WHATSAPP COMPOSER
+// ============================================================
+const WA_TEMPLATES={
+  quote:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\nYour quote *${ref||''}* is ready for review.\n\nPlease let me know if you'd like to proceed or if you have any questions.\n\n— ${s.bizName||'TechServe'}\n${s.phone||''}`,
+  invoice:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\n🧾 Your invoice *${ref||''}* has been issued.\n\nPlease review and process payment as per the attached details.\n\nThank you!\n— ${s.bizName||'TechServe'}`,
+  payment_request:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\n💳 *Payment Request*\n\nRef: *${ref||''}*\n\n${s.paymentInfo||'Please send payment to the details provided.'}\n\nKindly confirm once done.\n— ${s.bizName||'TechServe'}`,
+  payment_confirm:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\n✅ *Payment Confirmed!*\n\nWe've received your payment for *${ref||''}*.\n\nThank you for your prompt payment. We'll proceed with the work as scheduled.\n\n— ${s.bizName||'TechServe'}`,
+  meeting_confirm:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\n📅 *Meeting Confirmed*\n\n${ref||'Details to follow'}\n\nPlease reply ✅ to confirm you'll attend.\n\n— ${s.bizName||'TechServe'}`,
+  meeting_reminder:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\n⏰ *Reminder: Meeting Tomorrow*\n\n${ref||''}\n\nLooking forward to speaking with you!\n\n— ${s.bizName||'TechServe'}`,
+  project_update:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\n📊 *Project Update — ${ref||''}*\n\nJust a quick update on your project progress. Things are moving along well!\n\nI'll send a detailed report by end of week.\n\n— ${s.bizName||'TechServe'}`,
+  follow_up:(c,ref,s)=>`Hello ${c?c.name:'there'},\n\nI wanted to follow up on *${ref||'our previous conversation'}*.\n\nPlease let me know if you have any questions or if you're ready to proceed.\n\n— ${s.bizName||'TechServe'}`,
+  custom:()=>''
+};
+function applyTemplate(){
+  const tpl=v('wa-template');
+  const cid=v('wa-client');
+  const c=DB.get('clients').find(x=>x.id===cid);
+  const ref=v('wa-ref');
+  const s=settings();
+  if(WA_TEMPLATES[tpl]){
+    document.getElementById('wa-message').value=WA_TEMPLATES[tpl](c,ref,s);
+    updateWaPreview();
+  }
+}
+function updateWaPreview(){
+  const cid=v('wa-client');
+  const c=DB.get('clients').find(x=>x.id===cid);
+  const msg=v('wa-message')||'Select a client and template to preview your message.';
+  document.getElementById('wa-preview').innerHTML=msg.replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  document.getElementById('wa-preview').nextElementSibling&&(document.getElementById('wa-preview').nextElementSibling.textContent=new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}));
+  if(c){
+    document.getElementById('wa-name-preview').textContent=c.name;
+    document.getElementById('wa-avatar-preview').textContent=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  }
+}
+function sendViaWhatsApp(){
+  const cid=v('wa-client');
+  const c=DB.get('clients').find(x=>x.id===cid);
+  const msg=v('wa-message');if(!msg)return toast('Write a message first');
+  const phone=c?c.phone:'';
+  if(!phone)return toast('Select a client with a phone number');
+  window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+  logWaMessage(cid,v('wa-template'));
+  toast('WhatsApp opened','success');
+}
+function copyWaMessage(){
+  navigator.clipboard.writeText(v('wa-message')).then(()=>toast('Message copied','success'));
+}
+function logWaMessage(clientId,template){
+  const logs=DB.get('wa-logs');
+  const c=DB.get('clients').find(x=>x.id===clientId);
+  logs.push({id:genId(),clientId,clientName:c?c.name:'?',template:template||'custom',date:today(),status:'sent'});
+  DB.set('wa-logs',logs);
+  renderWaLog();
+}
+function renderWaLog(){
+  const logs=DB.get('wa-logs');
+  const tb=document.getElementById('wa-log-tbody');
+  if(!logs.length)return;
+  tb.innerHTML=logs.slice().reverse().slice(0,20).map(l=>`<tr><td class="td-secondary">${fmt(l.date)}</td><td>${l.clientName||'?'}</td><td>${l.template||'custom'}</td><td>${statusBadge('sent')}</td></tr>`).join('');
+}
+
+// ============================================================
+// CONFIRMATION LINK
+// ============================================================
+function generateConfirmLink(){
+  const cid=v('confirm-client');
+  const scope=v('confirm-scope');
+  const amount=v('confirm-amount');
+  if(!cid||!scope)return toast('Select a client and enter scope');
+  const c=DB.get('clients').find(x=>x.id===cid);
+  const s=settings();
+  const token=genId()+genId();
+  const params=new URLSearchParams({name:c?c.name:'Client',scope,amount,biz:s.bizName||'TechServe',token,date:today()});
+  const link=window.location.origin+window.location.pathname.replace('index.html','')+'confirm.html?'+params.toString();
+  document.getElementById('confirm-link-url').textContent=link;
+  document.getElementById('confirm-link-out').style.display='block';
+  DB.set('confirm-links',DB.get('confirm-links').concat([{token,clientId:cid,scope,amount,date:today(),status:'pending'}]));
+}
+function copyConfirmLink(){
+  const url=document.getElementById('confirm-link-url').textContent;
+  navigator.clipboard.writeText(url).then(()=>toast('Link copied!','success'));
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function deleteRecord(key,id){
+  const data=DB.get(key).filter(x=>x.id!==id);
+  DB.set(key,data);toast('Deleted');
+}
+function addActivity(html){
+  const acts=DB.get('activity');
+  acts.unshift({html,time:new Date().toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'})});
+  if(acts.length>50)acts.splice(50);
+  DB.set('activity',acts);
+}
+function exportData(){
+  const data={};
+  ['clients','quotes','invoices','payments','meetings','tasks','engagements','wa-logs','confirm-links','settings','activity'].forEach(k=>{data[k]=DB.get(k)||DB.getObj(k)});
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='techserve-backup-'+today()+'.json';a.click();
+  toast('Data exported','success');
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{try{
+    const data=JSON.parse(ev.target.result);
+    Object.entries(data).forEach(([k,v])=>localStorage.setItem('tsc_'+k,JSON.stringify(v)));
+    toast('Data imported! Refreshing...','success');
+    setTimeout(()=>location.reload(),1200);
+  }catch{toast('Invalid file')}};
+  reader.readAsText(file);
+}
+function clearData(){
+  Object.keys(localStorage).filter(k=>k.startsWith('tsc_')).forEach(k=>localStorage.removeItem(k));
+  toast('Data cleared');setTimeout(()=>location.reload(),800);
+}
+function filterTable(tableId,query){
+  const q=query.toLowerCase();
+  document.querySelectorAll('#'+tableId+' tbody tr').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none'});
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('current-date').textContent=new Date().toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  loadSettings();
+  renderDashboard();
+  renderWaLog();
+  refreshClientDropdowns();
+  // Load activity into feed
+  const acts=DB.get('activity');
+  if(acts.length){
+    document.getElementById('activity-feed').innerHTML=acts.slice(0,8).map(a=>`<div class="activity-item"><div class="activity-dot" style="background:var(--accent)"></div><div><div class="activity-text">${a.html}</div><div class="activity-time">${a.time}</div></div></div>`).join('');
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engagement Confirmation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f4ff;--card:#ffffff;--text:#1a1f36;--text2:#5a6480;--border:#e4e8f0;--accent:#4f8ef7;--green:#22c55e;--amber:#f59e0b;--red:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:32px 16px;color:var(--text)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.card-header{background:linear-gradient(135deg,#1e2d5e 0%,#2d4a9e 100%);padding:28px 28px 24px;color:#fff;text-align:center}
+.biz-name{font-size:13px;font-weight:500;opacity:.7;letter-spacing:.04em;margin-bottom:8px;text-transform:uppercase}
+.card-title{font-size:22px;font-weight:600;letter-spacing:-.3px;margin-bottom:6px}
+.card-subtitle{font-size:14px;opacity:.75}
+.card-body{padding:28px}
+.status-banner{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:10px;margin-bottom:24px;font-size:14px;font-weight:500}
+.status-pending{background:#fff7ed;border:1px solid #fed7aa;color:#c2410c}
+.status-confirmed{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d}
+.status-declined{background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+.status-icon{font-size:22px}
+.section{margin-bottom:20px}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);margin-bottom:10px}
+.detail-grid{display:grid;gap:10px}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid var(--border)}
+.dk{font-size:12px;color:var(--text2)}
+.dv{font-size:13px;font-weight:500;color:var(--text);text-align:right;max-width:280px}
+.amount-highlight{font-size:22px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;margin-bottom:10px}
+.btn-confirm{background:var(--green);color:#fff}
+.btn-confirm:hover{background:#16a34a}
+.btn-decline{background:#fef2f2;border:1px solid #fecaca;color:var(--red)}
+.btn-decline:hover{background:#fee2e2}
+.btn-wa{background:#25d366;color:#fff}
+.btn-wa:hover{background:#1dab52}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.footer{text-align:center;font-size:12px;color:var(--text2);margin-top:20px;line-height:1.6}
+.footer a{color:var(--accent);text-decoration:none}
+.confirmed-check{width:64px;height:64px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:#fff;animation:pop .3s ease-out}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.ref-code{font-family:monospace;font-size:13px;background:#f1f5f9;padding:8px 14px;border-radius:6px;text-align:center;letter-spacing:.06em;color:#475569;border:1px solid var(--border);margin:12px 0}
+input[type=text],textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border .15s;margin-top:4px}
+input:focus,textarea:focus{border-color:var(--accent)}
+label{font-size:12px;font-weight:500;color:var(--text2)}
+.form-group{margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="biz-name" id="biz-name">TechServe Business</div>
+    <div class="card-title">Engagement Confirmation</div>
+    <div class="card-subtitle">Please review and confirm the details below</div>
+  </div>
+  <div class="card-body" id="card-body">
+    <!-- Dynamic content injected here -->
+  </div>
+</div>
+<div class="footer">
+  Powered by TechServe CRM &middot; <a href="index.html">Business Portal</a><br>
+  This confirmation is secure and unique to your engagement.
+</div>
+
+<script>
+const params=new URLSearchParams(window.location.search);
+const name=params.get('name')||'Client';
+const scope=params.get('scope')||'Tech services';
+const amount=params.get('amount')||'0';
+const biz=params.get('biz')||'TechServe';
+const token=params.get('token')||'';
+const date=params.get('date')||new Date().toISOString().split('T')[0];
+const fmt=d=>d?new Date(d).toLocaleDateString('en-KE',{day:'2-digit',month:'long',year:'numeric'}):'—';
+
+document.getElementById('biz-name').textContent=biz;
+document.title=`Confirmation — ${biz}`;
+
+const confirmKey='confirm_'+token;
+const saved=localStorage.getItem(confirmKey);
+let confirmed=saved?JSON.parse(saved):null;
+
+function renderPending(){
+  document.getElementById('card-body').innerHTML=`
+    <div class="status-banner status-pending">
+      <span class="status-icon">⏳</span>
+      <div><div>Awaiting your confirmation</div><div style="font-size:12px;font-weight:400;margin-top:2px;opacity:.8">Please review the details and confirm below</div></div>
+    </div>
+    <div class="section">
+      <div class="section-label">Engagement details</div>
+      <div class="detail-grid">
+        <div class="detail-row"><span class="dk">Client name</span><span class="dv">${name}</span></div>
+        <div class="detail-row"><span class="dk">Service / scope</span><span class="dv">${scope}</span></div>
+        <div class="detail-row"><span class="dk">Date issued</span><span class="dv">${fmt(date)}</span></div>
+        <div class="detail-row"><span class="dk">Amount (KES)</span><span class="dv amount-highlight">KES ${Number(amount).toLocaleString()}</span></div>
+        <div class="detail-row"><span class="dk">Reference</span><span class="dv" style="font-family:monospace;font-size:11px">${token.toUpperCase().slice(0,12)}</span></div>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="section">
+      <div class="section-label">Your signature</div>
+      <div class="form-group">
+        <label>Full name (type to sign)</label>
+        <input type="text" id="sig-name" placeholder="Type your full name to confirm" value="${name}">
+      </div>
+      <div class="form-group">
+        <label>Any questions or notes? (optional)</label>
+        <textarea id="sig-notes" rows="3" placeholder="Ask a question or leave a note for ${biz}..."></textarea>
+      </div>
+    </div>
+    <button class="btn btn-confirm" onclick="doConfirm()">✅ I confirm this engagement</button>
+    <button class="btn btn-decline" onclick="doDecline()">❌ I have concerns / decline</button>
+    <div class="footer" style="margin-top:4px">By confirming, you acknowledge the scope and amount above and agree to proceed.</div>`;
+}
+
+function renderConfirmed(data){
+  document.getElementById('card-body').innerHTML=`
+    <div class="confirmed-check">✓</div>
+    <h2 style="text-align:center;font-size:20px;margin-bottom:6px;color:#15803d">Confirmed!</h2>
+    <p style="text-align:center;font-size:13px;color:var(--text2);margin-bottom:20px">Thank you ${data.sigName||name}. Your engagement has been confirmed.</p>
+    <div class="ref-code">Ref: ${token.toUpperCase().slice(0,12)} &middot; Confirmed ${fmt(data.confirmedAt)}</div>
+    <div class="section" style="margin-top:20px">
+      <div class="section-label">Confirmed details</div>
+      <div class="detail-grid">
+        <div class="detail-row"><span class="dk">Scope</span><span class="dv">${scope}</span></div>
+        <div class="detail-row"><span class="dk">Amount</span><span class="dv amount-highlight">KES ${Number(amount).toLocaleString()}</span></div>
+        <div class="detail-row"><span class="dk">Signed by</span><span class="dv">${data.sigName||name}</span></div>
+        ${data.notes?`<div class="detail-row"><span class="dk">Your notes</span><span class="dv">${data.notes}</span></div>`:''}
+      </div>
+    </div>
+    <hr class="divider">
+    <p style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:16px">A record of this confirmation has been saved. You can now contact ${biz} to proceed.</p>
+    <button class="btn btn-wa" onclick="contactViaWA()">💬 WhatsApp ${biz}</button>`;
+}
+
+function renderDeclined(data){
+  document.getElementById('card-body').innerHTML=`
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:48px;margin-bottom:8px">🚫</div>
+      <h2 style="font-size:18px;color:var(--red)">Engagement declined</h2>
+      <p style="font-size:13px;color:var(--text2);margin-top:6px">We've noted your response. ${biz} will be in touch to address your concerns.</p>
+    </div>
+    <div class="ref-code">Ref: ${token.toUpperCase().slice(0,12)} &middot; Declined ${fmt(data.declinedAt)}</div>
+    ${data.notes?`<div class="detail-row" style="margin-top:16px"><span class="dk">Your notes</span><span class="dv">${data.notes}</span></div>`:''}
+    <hr class="divider">
+    <button class="btn btn-wa" onclick="contactViaWA()" style="margin-top:8px">💬 Contact ${biz} directly</button>`;
+}
+
+function doConfirm(){
+  const sigName=document.getElementById('sig-name').value.trim();
+  const notes=document.getElementById('sig-notes').value.trim();
+  if(!sigName)return alert('Please type your name to sign');
+  const data={status:'confirmed',sigName,notes,confirmedAt:new Date().toISOString().split('T')[0],token,scope,amount,biz};
+  localStorage.setItem(confirmKey,JSON.stringify(data));
+  renderConfirmed(data);
+}
+
+function doDecline(){
+  const notes=prompt('Please let us know your concern or reason (optional):');
+  const data={status:'declined',notes:notes||'',declinedAt:new Date().toISOString().split('T')[0],token};
+  localStorage.setItem(confirmKey,JSON.stringify(data));
+  renderDeclined(data);
+}
+
+function contactViaWA(){
+  window.open('https://wa.me/?text='+encodeURIComponent(`Hello ${biz}, I'm contacting you regarding confirmation ref: ${token.toUpperCase().slice(0,12)}`),'_blank');
+}
+
+// Initial render
+if(confirmed){
+  if(confirmed.status==='confirmed')renderConfirmed(confirmed);
+  else if(confirmed.status==='declined')renderDeclined(confirmed);
+  else renderPending();
+}else{
+  if(!token){
+    document.getElementById('card-body').innerHTML=`<div style="text-align:center;padding:40px;color:#999"><div style="font-size:40px;margin-bottom:12px">⚠️</div><h3>Invalid link</h3><p>This confirmation link is not valid. Please contact your service provider.</p></div>`;
+  }else{
+    renderPending();
+  }
+}
+</script>
+</body>
+</html>
